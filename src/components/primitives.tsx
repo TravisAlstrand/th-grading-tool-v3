@@ -23,7 +23,7 @@ export function Logo({ className }: { className?: string }) {
 }
 
 type ButtonProps = React.ButtonHTMLAttributes<HTMLButtonElement> & {
-  variant?: 'default' | 'primary' | 'held'
+  variant?: 'default' | 'primary' | 'held' | 'danger' | 'nav'
   /** `icon` squares the padding for a single glyph. `cn` does not merge
    *  Tailwind classes, so padding has to be chosen here rather than
    *  overridden from the outside. */
@@ -44,6 +44,13 @@ export function Button({ variant = 'default', size = 'default', className, ...re
           'border-accent bg-accent font-bold text-on-accent hover:bg-accent-hi [&_kbd]:border-on-accent/25 [&_kbd]:text-on-accent/65',
         variant === 'held' &&
           'border-edge bg-edge font-semibold text-ink-2 hover:bg-edge-2 hover:text-ink',
+        // Filled, like primary — it discards the draft, so it should look
+        // like it means it.
+        variant === 'danger' &&
+          'border-needs bg-needs font-bold text-on-accent hover:bg-needs-ink [&_kbd]:border-on-accent/25 [&_kbd]:text-on-accent/65',
+        // Outlined rather than filled: going back is not a commit, and a
+        // third solid button would compete with copy and close.
+        variant === 'nav' && 'border-nav font-semibold text-nav hover:bg-nav/10 hover:text-nav-hi',
         className,
       )}
       {...rest}

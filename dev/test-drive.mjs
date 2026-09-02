@@ -376,7 +376,26 @@ async function main() {
 
   const body = await page.textContent('body')
   check('the flagged requirement is grouped under Needs work', body.includes('Needs work'))
-  check('its note is shown with it', body.includes('Only 3 phrases, and 2 contain digits.'))
+
+  // Groups start collapsed, so the editable column is just counts plus the
+  // opening and closing lines. Scope this to the left column — the Slack
+  // preview on the right renders notes regardless, and a whole-body search
+  // would pass without the group ever opening.
+  const editable = () => page.$eval('.overflow-y-auto', (el) => el.textContent)
+  check(
+    'review groups start collapsed',
+    !(await editable()).includes('Only 3 phrases, and 2 contain digits.'),
+  )
+  check('collapsed groups still show their counts', (await editable()).includes('Needs work'))
+  await page.click('[data-testid="group-needs"]')
+  await page.waitForTimeout(150)
+  check(
+    'expanding a group reveals the requirement and its note',
+    (await editable()).includes('Only 3 phrases, and 2 contain digits.'),
+  )
+  await page.click('[data-testid="group-needs"]')
+  await page.waitForTimeout(150)
+  check('and it collapses again', !(await editable()).includes('Only 3 phrases, and 2 contain digits.'))
 
   await page.click('text=Copy to clipboard')
   await page.waitForTimeout(300)

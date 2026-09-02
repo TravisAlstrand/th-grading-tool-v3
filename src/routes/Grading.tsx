@@ -144,7 +144,9 @@ export function Grading() {
     <>
       {/* Top bar */}
       <div className="flex shrink-0 flex-wrap items-center gap-[20px] border-b border-line bg-panel px-6 py-3 max-rails:gap-3 max-rails:px-4 max-rails:py-2.5">
-        <Button onClick={() => navigate('/')}>← Projects</Button>
+        <Button variant="nav" onClick={() => navigate('/')}>
+          ← Projects
+        </Button>
         <span className="tdchip" />
         <div className="flex min-w-0 flex-col gap-px">
           <span className="truncate text-[15.5px] font-semibold tracking-[-.01em]">

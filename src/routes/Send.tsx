@@ -139,7 +139,9 @@ export function Send() {
   return (
     <>
       <div className="flex shrink-0 flex-wrap items-center gap-[20px] border-b border-line bg-panel px-6 py-3 max-rails:gap-3 max-rails:px-4 max-rails:py-2.5">
-        <Button onClick={() => navigate(`/review/${project._id}`)}>← Back to rubric</Button>
+        <Button variant="nav" onClick={() => navigate(`/review/${project._id}`)}>
+          ← Back to rubric
+        </Button>
         <span className="tdchip" />
         <div className="flex min-w-0 flex-col gap-px">
           <span className="text-[15.5px] font-semibold">Review &amp; send</span>
@@ -160,7 +162,9 @@ export function Send() {
           Copy to clipboard
           <Kbd>{chord(ENTER)}</Kbd>
         </Button>
-        <Button onClick={closeReview}>Close review</Button>
+        <Button variant="danger" onClick={closeReview}>
+          Close review
+        </Button>
       </div>
 
       <div className="flex min-h-0 flex-1 max-rails:flex-col">
@@ -180,32 +184,31 @@ export function Send() {
           {GROUP_ORDER.map((grade) => {
             const items = groups[grade]
             if (!items.length) return null
-            // Met is usually most of the review and carries no notes, so it
-            // collapses; what needs editing stays above the fold.
-            const collapsible = grade === 'met'
-            const open = !collapsible || Boolean(expanded[grade])
+            // Closed to start: the counts are the summary, and the opening and
+            // closing lines are what you are actually here to edit. The full
+            // review is on the right either way.
+            const open = Boolean(expanded[grade])
 
             return (
               <div key={grade} className="flex flex-col gap-[12px]">
-                <div className="flex items-center gap-2.5 text-[14.5px] font-bold">
+                <button
+                  type="button"
+                  aria-expanded={open}
+                  data-testid={`group-${grade}`}
+                  className="flex items-center gap-2.5 rounded-lg border border-edge-3 bg-surface px-4 py-[12px] text-left text-[14.5px] font-bold hover:border-edge-2"
+                  onClick={() => setExpanded((e) => ({ ...e, [grade]: !open }))}
+                >
                   <span className={cn('h-[7.5px] w-[7.5px] rounded-full', GROUP_DOT[grade])} />
                   <span>{GRADES[grade].label}</span>
-                  <span className="font-mono text-[12px] font-normal text-ink-4">
+                  <span className="font-mono text-[14px] font-normal text-ink-2">
                     {items.length}
                   </span>
-                  {collapsible && (
-                    <button
-                      type="button"
-                      aria-expanded={open}
-                      className="ml-auto font-mono text-[11.5px] text-accent hover:underline"
-                      onClick={() => setExpanded((e) => ({ ...e, [grade]: !open }))}
-                    >
-                      {open ? 'Collapse' : 'Expand'}
-                    </button>
-                  )}
-                </div>
+                  <span className="ml-auto font-mono text-[11.5px] font-normal text-accent">
+                    {open ? 'Collapse' : 'Expand'}
+                  </span>
+                </button>
 
-                {open ? (
+                {open &&
                   items.map(({ req, note }) => (
                     <div
                       key={req._id}
@@ -224,20 +227,7 @@ export function Send() {
                         </span>
                       )}
                     </div>
-                  ))
-                ) : (
-                  <div className="flex flex-wrap gap-1.5">
-                    {items.map(({ req }) => (
-                      <span
-                        key={req._id}
-                        className="rounded-md border border-edge bg-surface px-[12px] py-1.5 text-[14px] text-ink-3"
-                      >
-                        {req.isExceeds && <span className="text-exceeds">★ </span>}
-                        {req.title}
-                      </span>
-                    ))}
-                  </div>
-                )}
+                  ))}
               </div>
             )
           })}

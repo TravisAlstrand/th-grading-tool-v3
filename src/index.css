@@ -56,6 +56,11 @@
   --color-on-accent: #0e1013;
   --color-on-brand: #10141a;
 
+  /* Navigation, not judgement. Blue is unused by the grade semantics, so
+     "back" can be prominent without reading as a grade. */
+  --color-nav: #5c9fdd;
+  --color-nav-hi: #82b8e8;
+
   --color-scrim: rgba(8, 10, 12, 0.72);
   --shadow-pop: 0 24px 60px -20px rgba(0, 0, 0, 0.8);
   --shadow-toast: 0 12px 30px -12px rgba(0, 0, 0, 0.7);
@@ -144,6 +149,8 @@
   --color-accent: #0d9b78;
   --color-accent-hi: #0a8365;
   --color-on-accent: #ffffff;
+  --color-nav: #1f6fb8;
+  --color-nav-hi: #17588f;
 
   --color-scrim: rgba(23, 27, 33, 0.35);
   --shadow-pop: 0 24px 60px -20px rgba(15, 20, 30, 0.28);
