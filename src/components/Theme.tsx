@@ -107,9 +107,9 @@ function MoonIcon() {
 }
 
 /**
- * Shows the theme you are in; the label says where pressing it takes you.
- * Rendered in all three screen headers — there is no shared chrome to hang
- * it on, and a floating control would sit on top of the rubric.
+ * Shows where pressing it takes you, not where you are — a sun in the dark
+ * theme means "switch to light". The icon, the label and the title all say
+ * the same thing.
  */
 export function ThemeToggle({ className }: { className?: string }) {
   const { theme, toggle } = useTheme()
@@ -125,7 +125,7 @@ export function ThemeToggle({ className }: { className?: string }) {
       data-testid="theme-toggle"
       data-theme-state={theme}
     >
-      {theme === 'dark' ? <MoonIcon /> : <SunIcon />}
+      {next === 'light' ? <SunIcon /> : <MoonIcon />}
     </Button>
   )
 }

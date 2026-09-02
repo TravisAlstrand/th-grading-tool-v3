@@ -276,13 +276,27 @@ async function main() {
   const pageBg = () =>
     page.evaluate(() => getComputedStyle(document.body).backgroundColor)
 
+  const toggleLabel = () =>
+    page.getAttribute('[data-testid="theme-toggle"]:visible', 'aria-label')
+
   check('a theme is resolved before React ever renders', ['light', 'dark'].includes(await themeOf()))
+  // The button advertises where it takes you, not where you are.
+  check(
+    'the toggle offers the theme you are not in',
+    (await toggleLabel()) === `Switch to ${(await themeOf()) === 'dark' ? 'light' : 'dark'} theme`,
+    await toggleLabel(),
+  )
   const startedAs = await themeOf()
   const darkBg = await pageBg()
 
-  await page.click('[data-testid="theme-toggle"]')
+  await page.click('[data-testid="theme-toggle"]:visible')
   await page.waitForTimeout(150)
   check('the toggle flips the theme', (await themeOf()) !== startedAs)
+  check(
+    'and now offers the way back',
+    (await toggleLabel()) === `Switch to ${startedAs} theme`,
+    await toggleLabel(),
+  )
   check('and the page actually repaints', (await pageBg()) !== darkBg)
   check('the choice is written to storage', await page.evaluate(() => localStorage.getItem('grading-tool:theme')) === (await themeOf()))
 
@@ -295,12 +309,16 @@ async function main() {
   // The toggle has to be reachable from every screen; there is no shared header.
   await page.click('text=Back to rubric')
   await page.waitForSelector('[data-testid="requirement"]')
-  check('the toggle is on the grading screen', await page.isVisible('[data-testid="theme-toggle"]'))
+  check('the toggle is on the grading screen', await page.isVisible('[data-testid="theme-toggle"]:visible'))
   await page.click('text=← Projects')
   await page.waitForSelector('h1')
-  check('the toggle is on the launcher', await page.isVisible('[data-testid="theme-toggle"]'))
+  check('the toggle is on the launcher', await page.isVisible('[data-testid="theme-toggle"]:visible'))
+  check(
+    'exactly one toggle is visible at a time',
+    (await page.$$('[data-testid="theme-toggle"]:visible')).length === 1,
+  )
 
-  await page.click('[data-testid="theme-toggle"]')
+  await page.click('[data-testid="theme-toggle"]:visible')
   await page.waitForTimeout(150)
   check('and toggles back from there', (await themeOf()) === startedAs)
 
@@ -325,6 +343,17 @@ async function main() {
   check(
     'the requirements are still there in the single column',
     (await page.$$('[data-testid="requirement"]')).length === 14,
+  )
+  // The toggle lives in the collapsed rail, so the header copy has to take over.
+  check(
+    'the theme toggle survives the rail collapsing',
+    (await page.$$('[data-testid="theme-toggle"]:visible')).length === 1,
+  )
+  await page.goto(BASE)
+  await page.waitForSelector('h1')
+  check(
+    'and on the launcher too',
+    (await page.$$('[data-testid="theme-toggle"]:visible')).length === 1,
   )
 
   /* ---------------- console ---------------- */

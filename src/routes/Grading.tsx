@@ -146,7 +146,9 @@ export function Grading() {
               : 'nothing to save yet'}
         </span>
 
-        <ThemeToggle />
+        {/* The rail below carries the toggle; this one covers the widths
+            where the rail is hidden. */}
+        <ThemeToggle className="rails:hidden" />
 
         <Button
           onClick={() => {
@@ -174,57 +176,62 @@ export function Grading() {
 
       {/* Section rail · requirements · live output */}
       <div className="flex min-h-0 flex-1">
-        <div className="flex w-[236px] shrink-0 flex-col gap-0.5 overflow-y-auto border-r border-line bg-panel px-2.5 py-4 max-rails:hidden">
-          <Label className="px-2.5 pb-2.5">Sections</Label>
-          {project.gradingSections?.map((section, i) => {
-            const inSection = (section.requirements ?? []).some(
-              (r) => r._id === review.focusReqId,
-            )
-            const status = sectionStatus(section, review.grades)
-            return (
-              <button
-                key={section._id}
-                type="button"
-                aria-current={inSection}
-                className={cn(
-                  'flex w-full items-center gap-[11px] rounded-[7px] p-2.5 text-left text-[13px]',
-                  inSection ? 'bg-surface-2 font-semibold text-ink' : 'text-ink-2 hover:bg-surface',
-                )}
-                onClick={() => {
-                  const first = section.requirements?.[0]
-                  if (first) dispatch({ type: 'focus', reqId: first._id })
-                }}
-              >
-                <span
+        <div className="flex w-[236px] shrink-0 flex-col border-r border-line bg-panel max-rails:hidden">
+          <div className="flex min-h-0 flex-1 flex-col gap-0.5 overflow-y-auto px-2.5 py-4">
+            <Label className="px-2.5 pb-2.5">Sections</Label>
+            {project.gradingSections?.map((section, i) => {
+              const inSection = (section.requirements ?? []).some(
+                (r) => r._id === review.focusReqId,
+              )
+              const status = sectionStatus(section, review.grades)
+              return (
+                <button
+                  key={section._id}
+                  type="button"
+                  aria-current={inSection}
                   className={cn(
-                    'font-mono text-[10.5px]',
-                    inSection ? 'text-accent' : 'text-ink-4',
+                    'flex w-full items-center gap-[11px] rounded-[7px] p-2.5 text-left text-[13px]',
+                    inSection ? 'bg-surface-2 font-semibold text-ink' : 'text-ink-2 hover:bg-surface',
                   )}
+                  onClick={() => {
+                    const first = section.requirements?.[0]
+                    if (first) dispatch({ type: 'focus', reqId: first._id })
+                  }}
                 >
-                  {String(i + 1).padStart(2, '0')}
-                </span>
-                <span className="truncate">{section.title}</span>
-                <span
-                  className="ml-auto flex shrink-0 gap-[3px]"
-                  aria-label={`${section.title}: ${status}`}
-                >
-                  {(section.requirements ?? []).map((r) => {
-                    const g = review.grades[r._id]?.grade
-                    const focused = r._id === review.focusReqId
-                    return (
-                      <span
-                        key={r._id}
-                        className={cn(
-                          'h-[5px] w-[5px] rounded-full',
-                          focused ? 'bg-ink' : DOT[g ?? 'unreviewed'],
-                        )}
-                      />
-                    )
-                  })}
-                </span>
-              </button>
-            )
-          })}
+                  <span
+                    className={cn(
+                      'font-mono text-[10.5px]',
+                      inSection ? 'text-accent' : 'text-ink-4',
+                    )}
+                  >
+                    {String(i + 1).padStart(2, '0')}
+                  </span>
+                  <span className="truncate">{section.title}</span>
+                  <span
+                    className="ml-auto flex shrink-0 gap-[3px]"
+                    aria-label={`${section.title}: ${status}`}
+                  >
+                    {(section.requirements ?? []).map((r) => {
+                      const g = review.grades[r._id]?.grade
+                      const focused = r._id === review.focusReqId
+                      return (
+                        <span
+                          key={r._id}
+                          className={cn(
+                            'h-[5px] w-[5px] rounded-full',
+                            focused ? 'bg-ink' : DOT[g ?? 'unreviewed'],
+                          )}
+                        />
+                      )
+                    })}
+                  </span>
+                </button>
+              )
+            })}
+          </div>
+          <div className="flex items-center border-t border-line p-2.5">
+            <ThemeToggle />
+          </div>
         </div>
 
         <div className="min-w-0 flex-1 overflow-y-auto">

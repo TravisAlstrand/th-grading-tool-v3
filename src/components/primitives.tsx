@@ -1,4 +1,5 @@
 import { cn } from '@/lib/cn'
+import logoUrl from '@/assets/treehouse-logo.png'
 
 export function Kbd({ children, className }: { children: React.ReactNode; className?: string }) {
   return <kbd className={cn('keycap', className)}>{children}</kbd>
@@ -10,22 +11,14 @@ export function Label({ children, className }: { children: React.ReactNode; clas
 
 export function Logo({ className }: { className?: string }) {
   return (
-    <svg
+    <img
+      src={logoUrl}
       width="20"
       height="20"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="1.6"
-      strokeLinecap="round"
-      strokeLinejoin="round"
+      alt=""
       aria-hidden="true"
-      className={className}
-    >
-      <path d="M12 3 3 8v8l9 5 9-5V8z" />
-      <path d="m3 8 9 5 9-5" />
-      <path d="M12 13v8" />
-    </svg>
+      className={cn('shrink-0', className)}
+    />
   )
 }
 

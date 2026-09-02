@@ -59,7 +59,7 @@ export function Launcher() {
       <div className="flex w-[268px] shrink-0 flex-col border-r border-line bg-panel max-rails:hidden">
         <div className="flex items-center gap-2.5 border-b border-line p-[18px] font-bold tracking-[-.01em]">
           <Logo />
-          Grading
+          Grading Tool v3
           <Kbd className="ml-auto">⌘K</Kbd>
         </div>
         <Label className="px-[18px] pt-4 pb-2">Techdegrees</Label>
@@ -88,8 +88,8 @@ export function Launcher() {
             </button>
           ))}
         </div>
-        <div className="mt-auto flex items-center gap-2.5 border-t border-line px-[18px] py-3.5 text-[12.5px] text-ink-3">
-          <span>Rubrics from Sanity</span>
+        <div className="mt-auto flex items-center gap-2.5 border-t border-line p-2.5 text-[12.5px] text-ink-3">
+          <ThemeToggle />
           <span className="ml-auto font-mono text-[10.5px] text-questioned">
             {knownDrafts.length} {plural(knownDrafts.length, 'draft')}
           </span>
@@ -105,9 +105,9 @@ export function Launcher() {
               style={{ background: active?.color ?? '#6FD3B4' }}
             />
             <h1 className="m-0 text-[22px] font-bold tracking-[-.015em]">{active?.name}</h1>
-            {/* The rail carries the branding but hides below 900px, so the
-                toggle lives here where it survives every breakpoint. */}
-            <ThemeToggle className="ml-auto" />
+            {/* The techdegree rail carries the toggle; this one covers the
+                widths where that rail is hidden. */}
+            <ThemeToggle className="ml-auto rails:hidden" />
           </div>
           <p className="mt-[5px] mb-0 text-[13px] text-ink-3">
             {active?.projects?.length ?? 0} {plural(active?.projects?.length ?? 0, 'project')} ·
