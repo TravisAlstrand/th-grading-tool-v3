@@ -19,6 +19,16 @@ npm run dev
 Rubrics come from the public read-only Sanity dataset (`supw1mz3` / `production`).
 There is no token, no login and nothing to configure to get started.
 
+**Install on the machine you will run it on.** Vite's bundler, Tailwind's oxide
+and lightningcss all ship native binaries, and npm installs only the one for the
+platform it is running on. A `node_modules` copied or installed from another OS
+fails at startup with "Cannot find native binding". The lockfile lists every
+platform, so the fix is always the same:
+
+```bash
+rm -rf node_modules && npm ci
+```
+
 ## The keyboard loop
 
 One requirement is focused at a time. Grading it moves you on.
