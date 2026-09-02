@@ -6,7 +6,10 @@ write feedback on the ones you flag, copy a Slack-formatted review to paste to t
 student.
 
 This is the v2 rewrite of the 2024 tool — a fresh codebase, not a refactor. It is
-built to the Direction B ("Console") design: dark, dense, keyboard-first.
+built to the Direction B ("Console") design: dense and keyboard-first. Dark is the
+default; the toggle in the header switches to light, and a first visit follows the
+OS setting. Both palettes are token overrides in `src/index.css`, so no component
+carries a colour of its own.
 
 ## Running it
 

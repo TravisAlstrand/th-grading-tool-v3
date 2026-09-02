@@ -8,6 +8,7 @@ import type { Grade } from '@/review/types'
 import { usePaletteOpen } from '@/components/CommandPalette'
 import { isTypingTarget } from '@/review/useGradingKeys'
 import { Button, Kbd, Label } from '@/components/primitives'
+import { ThemeToggle } from '@/components/Theme'
 import { useToast } from '@/components/Toast'
 import { copyText } from '@/lib/clipboard'
 import { ago, plural } from '@/lib/time'
@@ -56,14 +57,14 @@ function NotePreview({ note }: { note: string }) {
         segment.kind === 'code' ? (
           <div
             key={i}
-            className="rounded-md border border-edge bg-editor px-[11px] py-1.5 font-mono text-[11.5px] whitespace-pre-wrap text-[#9AA2AE]"
+            className="rounded-md border border-edge bg-editor px-[11px] py-1.5 font-mono text-[11.5px] whitespace-pre-wrap text-ink-2"
           >
             {codeBody(segment.lines)}
           </div>
         ) : (
           <div
             key={i}
-            className="border-l-[3px] border-edge-2 pl-[11px] text-[12.5px] whitespace-pre-wrap text-[#9AA2AE]"
+            className="border-l-[3px] border-edge-2 pl-[11px] text-[12.5px] whitespace-pre-wrap text-ink-2"
           >
             {segment.lines.join('\n')}
           </div>
@@ -156,6 +157,7 @@ export function Send() {
         >
           {tally.unreviewed ? `${tally.unreviewed} unreviewed` : 'nothing unreviewed'}
         </span>
+        <ThemeToggle />
         <Button variant={tally.unreviewed ? 'held' : 'primary'} onClick={() => void copy()}>
           Copy to clipboard
           <Kbd>⌘↵</Kbd>
@@ -219,7 +221,7 @@ export function Send() {
                         {req.title}
                       </span>
                       {note && (
-                        <span className="text-[13px] leading-[1.6] whitespace-pre-wrap text-[#9AA2AE]">
+                        <span className="text-[13px] leading-[1.6] whitespace-pre-wrap text-ink-2">
                           {note}
                         </span>
                       )}
@@ -267,10 +269,10 @@ export function Send() {
                 <Kbd className="ml-auto">preview</Kbd>
               </div>
               <div className="flex gap-[11px] p-4">
-                <div className="grid h-[34px] w-[34px] shrink-0 place-items-center rounded-lg bg-[var(--td)] text-[12px] font-bold text-bg">
+                <div className="grid h-[34px] w-[34px] shrink-0 place-items-center rounded-lg bg-[var(--td)] text-[12px] font-bold text-on-brand">
                   {(project.techdegree?.abbr ?? 'TD').slice(0, 2)}
                 </div>
-                <div className="flex min-w-0 flex-col gap-1.5 text-[13px] leading-[1.55] text-[#D5D9DF]">
+                <div className="flex min-w-0 flex-col gap-1.5 text-[13px] leading-[1.55] text-ink">
                   <div className="flex items-baseline gap-2">
                     <b className="text-[13px]">Reviewer</b>
                     <span className="text-[11px] text-ink-4">now</span>

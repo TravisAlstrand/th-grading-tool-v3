@@ -1,6 +1,7 @@
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom'
 import { PaletteProvider } from '@/components/CommandPalette'
+import { ThemeProvider } from '@/components/Theme'
 import { ToastProvider } from '@/components/Toast'
 import { Launcher } from '@/routes/Launcher'
 import { ReviewLayout } from '@/routes/ReviewLayout'
@@ -22,20 +23,22 @@ const queryClient = new QueryClient({
 export function App() {
   return (
     <QueryClientProvider client={queryClient}>
-      <BrowserRouter>
-        <ToastProvider>
-          <PaletteProvider>
-            <Routes>
-              <Route path="/" element={<Launcher />} />
-              <Route path="/review/:projectId" element={<ReviewLayout />}>
-                <Route index element={<Grading />} />
-                <Route path="send" element={<Send />} />
-              </Route>
-              <Route path="*" element={<Navigate to="/" replace />} />
-            </Routes>
-          </PaletteProvider>
-        </ToastProvider>
-      </BrowserRouter>
+      <ThemeProvider>
+        <BrowserRouter>
+          <ToastProvider>
+            <PaletteProvider>
+              <Routes>
+                <Route path="/" element={<Launcher />} />
+                <Route path="/review/:projectId" element={<ReviewLayout />}>
+                  <Route index element={<Grading />} />
+                  <Route path="send" element={<Send />} />
+                </Route>
+                <Route path="*" element={<Navigate to="/" replace />} />
+              </Routes>
+            </PaletteProvider>
+          </ToastProvider>
+        </BrowserRouter>
+      </ThemeProvider>
     </QueryClientProvider>
   )
 }

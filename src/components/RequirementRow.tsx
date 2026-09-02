@@ -66,7 +66,7 @@ export const RequirementRow = forwardRef<HTMLDivElement, RequirementRowProps>(
             <span
               className={cn(
                 'text-[14px] leading-[1.45]',
-                focused ? 'text-[15px] font-semibold text-white' : 'text-ink-2',
+                focused ? 'text-[15px] font-semibold text-ink' : 'text-ink-2',
               )}
             >
               {req.title}
@@ -131,7 +131,7 @@ export const RequirementRow = forwardRef<HTMLDivElement, RequirementRowProps>(
                 value={entry.note}
                 aria-label={`Feedback for ${req.title}`}
                 placeholder="What should the student change? This becomes the quoted note under the requirement."
-                className="block min-h-[76px] w-full resize-y border-0 bg-transparent px-[15px] py-3 font-sans text-[13.5px] leading-[1.6] text-[#D5D9DF] outline-none placeholder:text-ink-5"
+                className="block min-h-[76px] w-full resize-y border-0 bg-transparent px-[15px] py-3 font-sans text-[13.5px] leading-[1.6] text-ink outline-none placeholder:text-ink-5"
                 onChange={(e) => onNoteChange(e.target.value)}
               />
               <div className="flex flex-wrap items-center gap-3 border-t border-line bg-editor-foot px-[15px] py-2 text-[12px] text-ink-4">

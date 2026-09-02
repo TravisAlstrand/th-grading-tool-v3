@@ -9,6 +9,7 @@ import { usePaletteOpen } from '@/components/CommandPalette'
 import { OutputPanel } from '@/components/OutputPanel'
 import { RequirementRow } from '@/components/RequirementRow'
 import { Button, Kbd, Label } from '@/components/primitives'
+import { ThemeToggle } from '@/components/Theme'
 import { useToast } from '@/components/Toast'
 import { ago, plural } from '@/lib/time'
 import { cn } from '@/lib/cn'
@@ -144,6 +145,8 @@ export function Grading() {
               ? `saved ${ago(savedAt)}`
               : 'nothing to save yet'}
         </span>
+
+        <ThemeToggle />
 
         <Button
           onClick={() => {

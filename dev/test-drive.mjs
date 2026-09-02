@@ -269,6 +269,46 @@ async function main() {
     (await page.textContent('body')).includes('Only 3 phrases, and 2 contain digits.'),
   )
 
+  /* ---------------- light and dark ---------------- */
+
+  section('Light and dark')
+  const themeOf = () => page.evaluate(() => document.documentElement.dataset.theme)
+  const pageBg = () =>
+    page.evaluate(() => getComputedStyle(document.body).backgroundColor)
+
+  check('a theme is resolved before React ever renders', ['light', 'dark'].includes(await themeOf()))
+  const startedAs = await themeOf()
+  const darkBg = await pageBg()
+
+  await page.click('[data-testid="theme-toggle"]')
+  await page.waitForTimeout(150)
+  check('the toggle flips the theme', (await themeOf()) !== startedAs)
+  check('and the page actually repaints', (await pageBg()) !== darkBg)
+  check('the choice is written to storage', await page.evaluate(() => localStorage.getItem('grading-tool:theme')) === (await themeOf()))
+
+  const flipped = await themeOf()
+  await page.reload()
+  await page.waitForSelector('text=Slack preview')
+  check('the choice survives a reload', (await themeOf()) === flipped)
+  check('the review is still on screen after the reload', (await page.textContent('body')).includes('Only 3 phrases, and 2 contain digits.'))
+
+  // The toggle has to be reachable from every screen; there is no shared header.
+  await page.click('text=Back to rubric')
+  await page.waitForSelector('[data-testid="requirement"]')
+  check('the toggle is on the grading screen', await page.isVisible('[data-testid="theme-toggle"]'))
+  await page.click('text=← Projects')
+  await page.waitForSelector('h1')
+  check('the toggle is on the launcher', await page.isVisible('[data-testid="theme-toggle"]'))
+
+  await page.click('[data-testid="theme-toggle"]')
+  await page.waitForTimeout(150)
+  check('and toggles back from there', (await themeOf()) === startedAs)
+
+  await page.click('text=Continue')
+  await page.waitForSelector('[data-testid="requirement"]')
+  await page.keyboard.press('Control+Enter')
+  await page.waitForSelector('text=Slack preview')
+
   /* ---------------- reflow ---------------- */
 
   section('Reflow')

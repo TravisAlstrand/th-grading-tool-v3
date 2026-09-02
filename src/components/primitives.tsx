@@ -31,18 +31,24 @@ export function Logo({ className }: { className?: string }) {
 
 type ButtonProps = React.ButtonHTMLAttributes<HTMLButtonElement> & {
   variant?: 'default' | 'primary' | 'held'
+  /** `icon` squares the padding for a single glyph. `cn` does not merge
+   *  Tailwind classes, so padding has to be chosen here rather than
+   *  overridden from the outside. */
+  size?: 'default' | 'icon'
 }
 
-export function Button({ variant = 'default', className, ...rest }: ButtonProps) {
+export function Button({ variant = 'default', size = 'default', className, ...rest }: ButtonProps) {
   return (
     <button
       type="button"
       className={cn(
-        'inline-flex items-center gap-[9px] rounded-[7px] border px-[15px] py-2 text-[12.5px]',
+        'inline-flex items-center gap-[9px] rounded-[7px] border text-[12.5px]',
         'transition-colors duration-100',
+        size === 'default' && 'px-[15px] py-2',
+        size === 'icon' && 'px-2 py-2',
         variant === 'default' && 'border-edge text-ink-3 hover:bg-surface hover:text-ink-2',
         variant === 'primary' &&
-          'border-accent bg-accent font-bold text-bg hover:bg-accent-hi [&_kbd]:border-bg/25 [&_kbd]:text-bg/65',
+          'border-accent bg-accent font-bold text-on-accent hover:bg-accent-hi [&_kbd]:border-on-accent/25 [&_kbd]:text-on-accent/65',
         variant === 'held' &&
           'border-edge bg-edge font-semibold text-ink-2 hover:bg-edge-2 hover:text-ink',
         className,

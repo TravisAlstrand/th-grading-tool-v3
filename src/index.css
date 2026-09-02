@@ -49,6 +49,17 @@
   --color-accent: #6fd3b4;
   --color-accent-hi: #86e0c4;
 
+  /* Ink for text sitting ON a filled accent or techdegree colour. These are
+     the two places the palette inverts, so they are tokens rather than
+     `text-bg` — in light mode the accent goes dark and its ink goes white,
+     while a techdegree's brand colour stays bright and keeps dark ink. */
+  --color-on-accent: #0e1013;
+  --color-on-brand: #10141a;
+
+  --color-scrim: rgba(8, 10, 12, 0.72);
+  --shadow-pop: 0 24px 60px -20px rgba(0, 0, 0, 0.8);
+  --shadow-toast: 0 12px 30px -12px rgba(0, 0, 0, 0.7);
+
   --font-sans: 'Archivo', system-ui, -apple-system, 'Segoe UI', sans-serif;
   --font-mono: 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, monospace;
 
@@ -62,6 +73,67 @@
 :root {
   --td: #6fd3b4;
   color-scheme: dark;
+}
+
+/* ------------------------------------------------------------------
+   Light. The tokens above are the dark palette and the default; this
+   block redefines the same names, so every utility in the app follows
+   without a single `dark:` variant in a component.
+
+   `data-theme` is always written explicitly on <html> — by the inline
+   script in index.html before first paint, then by ThemeProvider — so
+   this needs one selector rather than a `prefers-color-scheme` copy.
+   ------------------------------------------------------------------ */
+:root[data-theme='light'] {
+  color-scheme: light;
+
+  /* surfaces, back to front — the page is grey and panels lift to white,
+     the inverse of the dark ramp */
+  --color-bg: #f4f6f9;
+  --color-panel: #ffffff;
+  --color-surface: #f7f9fb;
+  --color-surface-2: #e7ecf2;
+  --color-raised: #ffffff;
+  --color-sechead: #eef1f5;
+  --color-editor: #ffffff;
+  --color-editor-foot: #f2f5f8;
+  --color-resume: #edfaf4;
+
+  /* rules and borders */
+  --color-line: #e3e8ee;
+  --color-line-soft: #edf0f4;
+  --color-edge: #d2d9e2;
+  --color-edge-2: #a9b4c2;
+  --color-edge-3: #c3ccd7;
+  --color-resume-edge: #a4dbc2;
+
+  /* type — the ramp inverts, ink stays the strongest */
+  --color-ink: #171b21;
+  --color-ink-2: #39424f;
+  --color-ink-3: #5b6472;
+  --color-ink-4: #737d8b;
+  --color-ink-5: #98a1ae;
+  --color-quote: #667085;
+
+  /* grade semantics — darkened so they carry as text on a light ground,
+     and the -ink variants darken further where they sit on a tint */
+  --color-met: #2e8b57;
+  --color-met-ink: #1e6b41;
+  --color-met-bg: #e6f5ec;
+  --color-questioned: #b0761a;
+  --color-questioned-ink: #855810;
+  --color-needs: #cf4436;
+  --color-needs-ink: #a33329;
+  --color-needs-bg: #fdecea;
+  --color-exceeds: #96690f;
+  --color-exceeds-bg: #faf0d8;
+  --color-accent: #0d9b78;
+  --color-accent-hi: #0a8365;
+  --color-on-accent: #ffffff;
+
+  --color-scrim: rgba(23, 27, 33, 0.35);
+  --shadow-pop: 0 24px 60px -20px rgba(15, 20, 30, 0.28);
+  --shadow-toast: 0 12px 30px -12px rgba(15, 20, 30, 0.3);
 }
 
 @layer base {

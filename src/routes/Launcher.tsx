@@ -8,6 +8,7 @@ import { ago, plural } from '@/lib/time'
 import { cn } from '@/lib/cn'
 import { Button, Kbd, Label, Logo } from '@/components/primitives'
 import { EmptyState, ErrorState, LoadingState } from '@/components/StateViews'
+import { ThemeToggle } from '@/components/Theme'
 import { useToast } from '@/components/Toast'
 
 export function Launcher() {
@@ -104,6 +105,9 @@ export function Launcher() {
               style={{ background: active?.color ?? '#6FD3B4' }}
             />
             <h1 className="m-0 text-[22px] font-bold tracking-[-.015em]">{active?.name}</h1>
+            {/* The rail carries the branding but hides below 900px, so the
+                toggle lives here where it survives every breakpoint. */}
+            <ThemeToggle className="ml-auto" />
           </div>
           <p className="mt-[5px] mb-0 text-[13px] text-ink-3">
             {active?.projects?.length ?? 0} {plural(active?.projects?.length ?? 0, 'project')} ·

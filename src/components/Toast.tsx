@@ -41,8 +41,8 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
         <div
           className={cn(
             'fixed bottom-[54px] left-1/2 z-60 -translate-x-1/2 rounded-lg px-[18px] py-2.5',
-            'text-[13px] font-bold shadow-[0_12px_30px_-12px_rgba(0,0,0,.7)]',
-            toast.tone === 'ok' ? 'bg-accent text-bg' : 'bg-edge text-ink',
+            'text-[13px] font-bold shadow-toast',
+            toast.tone === 'ok' ? 'bg-accent text-on-accent' : 'bg-edge text-ink',
           )}
         >
           {toast.message}

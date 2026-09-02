@@ -10,6 +10,25 @@
       rel="stylesheet"
       href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap"
     />
+    <script>
+      /* Runs before first paint so the page never flashes the wrong theme.
+         Deliberately duplicates the key and the fallback in src/lib/theme.ts
+         — nothing bundled can run this early. Keep the two in step. */
+      ;(function () {
+        try {
+          var pref = localStorage.getItem('grading-tool:theme')
+          var theme =
+            pref === 'light' || pref === 'dark'
+              ? pref
+              : window.matchMedia('(prefers-color-scheme: light)').matches
+                ? 'light'
+                : 'dark'
+          document.documentElement.setAttribute('data-theme', theme)
+        } catch (e) {
+          document.documentElement.setAttribute('data-theme', 'dark')
+        }
+      })()
+    </script>
   </head>
   <body>
     <div id="root"></div>

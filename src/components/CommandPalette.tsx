@@ -97,7 +97,7 @@ function CommandPalette() {
 
   return (
     <div
-      className="fixed inset-0 z-50 grid place-items-start justify-center bg-[rgba(8,10,12,.72)] pt-[12vh]"
+      className="fixed inset-0 z-50 grid place-items-start justify-center bg-scrim pt-[12vh]"
       onMouseDown={(e) => {
         if (e.target === e.currentTarget) setOpen(false)
       }}
@@ -106,7 +106,7 @@ function CommandPalette() {
         role="dialog"
         aria-modal="true"
         aria-label="Search projects"
-        className="flex max-h-[60vh] w-[min(620px,92vw)] flex-col overflow-hidden rounded-xl border border-edge bg-panel shadow-[0_24px_60px_-20px_rgba(0,0,0,.8)]"
+        className="flex max-h-[60vh] w-[min(620px,92vw)] flex-col overflow-hidden rounded-xl border border-edge bg-panel shadow-pop"
       >
         <input
           ref={inputRef}

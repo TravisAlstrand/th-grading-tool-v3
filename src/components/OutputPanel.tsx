@@ -67,7 +67,7 @@ export function OutputPanel({
         <Label>{template.name} output</Label>
         <Kbd className="ml-auto">live</Kbd>
       </div>
-      <div className="flex-1 overflow-y-auto px-[18px] py-4 font-mono text-[11.5px] leading-[1.85] break-words whitespace-pre-wrap text-[#8C94A0]">
+      <div className="flex-1 overflow-y-auto px-[18px] py-4 font-mono text-[11.5px] leading-[1.85] break-words whitespace-pre-wrap text-ink-3">
         {lines.map((line, i) => (
           <div
             // Output lines have no identity of their own; they are a
