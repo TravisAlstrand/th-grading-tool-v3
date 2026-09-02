@@ -243,6 +243,54 @@ async function main() {
   )
   check('every section header carries its own progress', progress >= 4, `${progress} headers`)
 
+  /* ---------------- tab indents inside a fence ---------------- */
+
+  section('Tab indents, but only inside a code block')
+  await page.keyboard.press('j')
+  await page.waitForTimeout(120)
+  await page.keyboard.press('3')
+  await page.waitForSelector('textarea')
+  await page.keyboard.type('Swap these:')
+  // Outside a fence Tab must keep its normal job of leaving the field.
+  await page.keyboard.press('Tab')
+  await page.waitForTimeout(150)
+  check(
+    'outside a code block, Tab still moves focus out',
+    await page.evaluate(() => document.activeElement?.tagName !== 'TEXTAREA'),
+  )
+
+  await page.click('textarea')
+  await page.evaluate(() => {
+    const t = document.querySelector('textarea')
+    t.setSelectionRange(t.value.length, t.value.length)
+  })
+  await page.keyboard.press('Enter')
+  await page.keyboard.type('```js')
+  await page.keyboard.press('Enter')
+  await page.keyboard.press('Tab')
+  await page.keyboard.type('const total = 1')
+  const indented = await page.inputValue('textarea')
+  check('inside a code block, Tab indents', indented.includes('\n  const total = 1'), JSON.stringify(indented))
+  check('focus stayed in the note', await page.evaluate(() => document.activeElement?.tagName === 'TEXTAREA'))
+
+  await page.keyboard.press('Shift+Tab')
+  const outdented = await page.inputValue('textarea')
+  check('Shift+Tab outdents again', outdented.includes('\nconst total = 1'), JSON.stringify(outdented))
+  check('the hint appears once there is a code block', (await page.textContent('body')).includes('Tab indents inside'))
+
+  // Escape is the way out, so intercepting Tab is not a keyboard trap.
+  await page.keyboard.press('Escape')
+  await page.waitForTimeout(120)
+  check(
+    'Esc still leaves the field from inside a code block',
+    await page.evaluate(() => document.activeElement?.tagName !== 'TEXTAREA'),
+  )
+  // Put this requirement back to unreviewed for the checks that follow.
+  await page.keyboard.press('3')
+  await page.waitForTimeout(120)
+  await page.keyboard.press('k')
+  await page.waitForTimeout(120)
+
   /* ---------------- notes follow the grade ---------------- */
 
   section('Feedback follows the grade')

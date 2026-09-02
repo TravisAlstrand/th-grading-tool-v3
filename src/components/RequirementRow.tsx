@@ -4,6 +4,8 @@ import { GRADES, GRADE_ORDER, takesNote } from '@/review/grades'
 import type { Grade, GradeEntry } from '@/review/types'
 import { cn } from '@/lib/cn'
 import { ENTER, chord } from '@/lib/platform'
+import { indentInTextarea } from '@/lib/indent'
+import { isInsideFence } from '@/review/templates'
 
 const STRIPE: Record<Grade, string> = {
   met: 'bg-met',
@@ -147,9 +149,22 @@ export const RequirementRow = forwardRef<HTMLDivElement, RequirementRowProps>(
                 placeholder="What should the student change? This becomes the quoted note under the requirement."
                 className="block min-h-[84px] w-full resize-y border-0 bg-transparent px-[16.5px] py-3 font-sans text-[15px] leading-[1.6] text-ink outline-none placeholder:text-ink-5"
                 onChange={(e) => onNoteChange(e.target.value)}
+                onKeyDown={(e) => {
+                  // Tab is how a keyboard user leaves a field, so it is only
+                  // taken inside a ``` block, where a literal indent is what
+                  // was meant. Esc still leaves the field from anywhere.
+                  if (e.key !== 'Tab' || e.metaKey || e.ctrlKey || e.altKey) return
+                  const field = e.currentTarget
+                  if (!isInsideFence(field.value, field.selectionStart)) return
+                  e.preventDefault()
+                  indentInTextarea(field, e.shiftKey)
+                }}
               />
               <div className="flex flex-wrap items-center gap-3 border-t border-line bg-editor-foot px-[16.5px] py-2 text-[13px] text-ink-4">
                 <span className="font-mono text-[11px]">{chord(ENTER)} save &amp; next</span>
+                {entry.note.includes('```') && (
+                  <span className="font-mono text-[11px]">Tab indents inside ```</span>
+                )}
                 <span className="ml-auto font-mono text-[11px]">Esc leaves the field</span>
               </div>
             </div>

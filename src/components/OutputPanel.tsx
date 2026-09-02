@@ -79,15 +79,7 @@ export function OutputPanel({
           </div>
         ))}
       </div>
-      <div className="flex flex-col gap-2.5 border-t border-line px-[20px] py-3">
-        <div className="flex gap-1.5">
-          <span className="rounded-[5.5px] bg-surface-2 px-[12px] py-[5.5px] text-[12.5px] text-ink">
-            {template.name}
-          </span>
-          <span className="self-center font-mono text-[11px] text-ink-4">
-            email + plain text land in milestone 2
-          </span>
-        </div>
+      <div className="flex flex-col border-t border-line px-[20px] py-3">
         <span className="font-mono text-[11.5px] text-ink-4">
           {unreviewed
             ? `${unreviewed} ${plural(unreviewed, 'requirement')} still unreviewed`

@@ -64,6 +64,24 @@ export function splitFences(note: string): NoteSegment[] {
 }
 
 /**
+ * Is the caret sitting inside a ``` block? The fence delimiters themselves
+ * count as inside, so pressing Tab on the opening line behaves like pressing
+ * it on the code below.
+ *
+ * The note editor uses this to decide whether Tab indents or does its normal
+ * job of moving focus — outside a code block, Tab must stay Tab.
+ */
+export function isInsideFence(text: string, caret: number): boolean {
+  const line = text.slice(0, Math.max(0, caret)).split('\n').length - 1
+  let seen = 0
+  for (const segment of splitFences(text)) {
+    seen += segment.lines.length
+    if (line < seen) return segment.kind === 'code'
+  }
+  return false
+}
+
+/**
  * Quote a note line by line, but leave fenced code alone. A `> ` inside a
  * Slack code block prints as a literal `>` on every line, so the fence and
  * its contents go out at column 0 and the quote bar breaks around the block.

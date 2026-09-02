@@ -11,7 +11,7 @@ import { RequirementRow } from '@/components/RequirementRow'
 import { Button, Kbd, Label } from '@/components/primitives'
 import { ThemeToggle } from '@/components/Theme'
 import { useToast } from '@/components/Toast'
-import { ago, plural } from '@/lib/time'
+import { ago } from '@/lib/time'
 import { cn } from '@/lib/cn'
 import { ENTER, chord } from '@/lib/platform'
 
@@ -151,12 +151,11 @@ export function Grading() {
             {project.title}
           </span>
           <span className="font-mono text-[11.5px] text-ink-4">
-            {tdName} · project {String(project.projectNumber ?? 0).padStart(2, '0')} · {tally.total}{' '}
-            {plural(tally.total, 'requirement')}
+            {tdName} · project {String(project.projectNumber ?? 0).padStart(2, '0')}
           </span>
         </div>
 
-        <div className="flex min-w-0 max-w-[462px] flex-1 gap-[3.5px] max-rails:max-w-none">
+        <div className="flex min-w-0 max-w-[590px] flex-1 gap-[3.5px] max-rails:max-w-none">
           {list.map(({ req }) => {
             const grade = review.grades[req._id]?.grade
             const focused = req._id === review.focusReqId
