@@ -1,11 +1,45 @@
 import { useMemo } from 'react'
 import type { ProjectDetail } from '@/sanity/types'
 import { buildReview } from '@/review/buildReview'
-import { getTemplate } from '@/review/templates'
+import { getTemplate, isFenceDelimiter, type Template } from '@/review/templates'
+import { GRADE_ORDER } from '@/review/grades'
 import type { Review } from '@/review/types'
 import { cn } from '@/lib/cn'
 import { Kbd, Label } from './primitives'
 import { plural } from '@/lib/time'
+
+type LineKind = 'met' | 'questioned' | 'needs' | 'quote' | 'code' | 'plain'
+
+const KIND_CLASS: Record<LineKind, string> = {
+  met: 'text-met',
+  questioned: 'text-questioned',
+  needs: 'text-needs',
+  quote: 'text-quote',
+  code: 'bg-editor px-1.5 text-quote',
+  plain: '',
+}
+
+/**
+ * One pass, carrying fence state — a `> ` test per line cannot tell a quoted
+ * note from the code block sitting inside one.
+ */
+function classifyLines(lines: string[], template: Template): LineKind[] {
+  let inFence = false
+  return lines.map((line) => {
+    const grade = GRADE_ORDER.find((g) => line.startsWith(template.mark[g]))
+    if (grade) {
+      // A requirement line ends a fence the reviewer never closed.
+      inFence = false
+      return grade === 'skipped' ? 'plain' : grade
+    }
+    if (isFenceDelimiter(line)) {
+      inFence = !inFence
+      return 'code'
+    }
+    if (inFence) return 'code'
+    return /^(>|\s{4})/.test(line) ? 'quote' : 'plain'
+  })
+}
 
 /**
  * The Slack message as it is being written. Not a summary of the review —
@@ -25,6 +59,7 @@ export function OutputPanel({
   const { text } = useMemo(() => buildReview(review, project), [review, project])
 
   const lines = text.split('\n')
+  const kinds = classifyLines(lines, template)
 
   return (
     <div className="flex w-[372px] shrink-0 flex-col border-l border-line bg-panel max-panel:hidden">
@@ -38,12 +73,7 @@ export function OutputPanel({
             // Output lines have no identity of their own; they are a
             // rendering of `text`, which is rebuilt whole on every change.
             key={`${i}-${line}`}
-            className={cn(
-              line.startsWith(template.mark.met) && 'text-met',
-              line.startsWith(template.mark.questioned) && 'text-questioned',
-              line.startsWith(template.mark.needs) && 'text-needs',
-              /^(>|\s{4})/.test(line) && 'text-quote',
-            )}
+            className={cn(KIND_CLASS[kinds[i] ?? 'plain'])}
           >
             {line || ' '}
           </div>

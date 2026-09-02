@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import { useReviewContext } from './ReviewLayout'
 import { buildReview } from '@/review/buildReview'
 import { GRADES } from '@/review/grades'
+import { isFenceDelimiter, splitFences } from '@/review/templates'
 import type { Grade } from '@/review/types'
 import { usePaletteOpen } from '@/components/CommandPalette'
 import { isTypingTarget } from '@/review/useGradingKeys'
@@ -27,6 +28,49 @@ const GROUP_EDGE: Record<Grade, string> = {
   questioned: 'border-l-[3px] border-l-questioned',
   needs: 'border-l-[3px] border-l-needs',
   skipped: 'border-l-[3px] border-l-edge-2',
+}
+
+/**
+ * Slack draws the fence itself, but it has no language hints — a ```js fence
+ * shows a stray "js" as the block's first line. The preview shows that too;
+ * it is the output, not a tidied version of it.
+ */
+function codeBody(lines: string[]): string {
+  const out: string[] = []
+  for (const line of lines) {
+    if (isFenceDelimiter(line)) {
+      const rest = line.trim().slice(3)
+      if (rest) out.push(rest)
+      continue
+    }
+    out.push(line)
+  }
+  return out.join('\n')
+}
+
+/** A note as Slack draws it: a quote bar on the prose, a plain box on code. */
+function NotePreview({ note }: { note: string }) {
+  return (
+    <div className="flex flex-col gap-1">
+      {splitFences(note).map((segment, i) =>
+        segment.kind === 'code' ? (
+          <div
+            key={i}
+            className="rounded-md border border-edge bg-editor px-[11px] py-1.5 font-mono text-[11.5px] whitespace-pre-wrap text-[#9AA2AE]"
+          >
+            {codeBody(segment.lines)}
+          </div>
+        ) : (
+          <div
+            key={i}
+            className="border-l-[3px] border-edge-2 pl-[11px] text-[12.5px] whitespace-pre-wrap text-[#9AA2AE]"
+          >
+            {segment.lines.join('\n')}
+          </div>
+        ),
+      )}
+    </div>
+  )
 }
 
 const GLYPH: Record<Grade, string> = { met: '✓', questioned: '?', needs: '✕', skipped: '–' }
@@ -244,11 +288,7 @@ export function Send() {
                               {req.isExceeds ? '★ ' : ''}
                               {req.title}
                             </span>
-                            {note && (
-                              <div className="border-l-[3px] border-edge-2 pl-[11px] text-[12.5px] whitespace-pre-wrap text-[#9AA2AE]">
-                                {note}
-                              </div>
-                            )}
+                            {note && <NotePreview note={note} />}
                           </div>
                         ))}
                       </div>

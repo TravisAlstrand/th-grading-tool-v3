@@ -67,6 +67,29 @@ describe('buildReview', () => {
     )
   })
 
+  it('leaves a fenced code block out of the quote and quotes the prose around it', () => {
+    // A "> " inside a Slack code block prints as a literal ">" on every line.
+    const note = [
+      'Two of these are still var:',
+      '```js',
+      'var total = items.length',
+      '```',
+      'Same in the loop below.',
+    ].join('\n')
+    const review = reviewFor(GAME_SHOW, gradesFrom([[id(1), 'needs', note]]))
+    const { text } = buildReview(review, GAME_SHOW)
+    expect(text).toContain(
+      [
+        `:needs-work:${titleOf(id(1))}`,
+        '> Two of these are still var:',
+        '```js',
+        'var total = items.length',
+        '```',
+        '> Same in the loop below.',
+      ].join('\n'),
+    )
+  })
+
   it('trims whitespace-only notes rather than emitting an empty quote', () => {
     const review = reviewFor(GAME_SHOW, gradesFrom([[id(1), 'needs', '   \n  ']]))
     const { text } = buildReview(review, GAME_SHOW)

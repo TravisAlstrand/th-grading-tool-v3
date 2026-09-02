@@ -23,4 +23,5 @@ export function takesNote(grade: Grade | undefined): boolean {
 }
 
 export const DEFAULT_OPENING = "Here's the full breakdown of your project review."
-export const DEFAULT_CLOSING = 'Shout in #community if anything here is unclear.'
+export const DEFAULT_CLOSING =
+  "If anything above is unclear or you'd like more help, please let me know!"
