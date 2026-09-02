@@ -1,0 +1,359 @@
+[
+  {
+    "_id": "57d592e8-4d55-4707-9ecc-0550361e95c8",
+    "title": "Game Show App",
+    "projectNumber": 6,
+    "studyGuide": "https://drive.google.com/file/d/1tijAzRqxbcUZ8Ylj8onWKmJA4Fnmsf1V/view?usp=sharing",
+    "techdegree": {
+      "_id": "70dd7eed-2829-4210-ae96-94c63f54ea03",
+      "name": "Front End Web Development",
+      "abbr": "FEWD",
+      "color": "#5FCF80"
+    },
+    "gradingSections": [
+      {
+        "_id": "55193b82-3bb3-4018-b3a0-c391fed05c61",
+        "title": "Phrases",
+        "order": 1,
+        "requirements": [
+          {
+            "_id": "51150f9d-fa3b-4a80-b701-3b83f1978531",
+            "title": "An array of strings has been created for the phrases",
+            "description": null,
+            "isExceeds": false,
+            "order": 1
+          },
+          {
+            "_id": "889cdfe7-c8f5-4348-8c73-e46e04afd484",
+            "title": "5 phrases are in the array",
+            "description": null,
+            "isExceeds": false,
+            "order": 2
+          },
+          {
+            "_id": "1ee82f75-5ce9-4592-88c7-ae345d6b5342",
+            "title": "Phrases in array include only letters and spaces",
+            "description": null,
+            "isExceeds": false,
+            "order": 3
+          }
+        ]
+      },
+      {
+        "_id": "b96d173f-fcad-410d-87e1-2713c8c5c45d",
+        "title": "Phrase display",
+        "order": 2,
+        "requirements": [
+          {
+            "_id": "228cb3b4-0104-4342-9488-d75d9b3165fe",
+            "title": "A random, unknown phrase is chosen when the page loads",
+            "description": null,
+            "isExceeds": false,
+            "order": 1
+          },
+          {
+            "_id": "592f3d2e-fd1a-4615-8173-b92a8adf1e50",
+            "title": "Each letter and space is appended to the #phrase ul element",
+            "description": null,
+            "isExceeds": false,
+            "order": 2
+          },
+          {
+            "_id": "6e6d26f4-3785-48f5-a259-01a7e30269e2",
+            "title": "Only letters in the phrase have the class “letter”",
+            "description": null,
+            "isExceeds": false,
+            "order": 3
+          },
+          {
+            "_id": "d0a0f933-fa69-4fc0-ae0e-0392641ca6a0",
+            "title": "Transitions have been added to the phrase display",
+            "description": null,
+            "isExceeds": true,
+            "order": 4
+          }
+        ]
+      },
+      {
+        "_id": "5e2801e8-88ec-467e-9577-d4a662a62fd1",
+        "title": "Keyboard",
+        "order": 3,
+        "requirements": [
+          {
+            "_id": "44b34d3f-da4f-412f-b614-1080cba8ecda",
+            "title": "Clicking a letter present in the phrase adds the “show” class to those letters in the display",
+            "description": null,
+            "isExceeds": false,
+            "order": 1
+          },
+          {
+            "_id": "3b8870be-dda1-48f7-a5c8-27753dda044b",
+            "title": "Clicking a letter not present in the phrase increases the count of the missed variable by 1 and changes a liveHeart.png image to a lostHeart.png image.",
+            "description": null,
+            "isExceeds": false,
+            "order": 2
+          },
+          {
+            "_id": "804e98df-77d5-45f7-9e33-2c1cf8ff3c94",
+            "title": "No letter can be clicked twice",
+            "description": null,
+            "isExceeds": false,
+            "order": 3
+          },
+          {
+            "_id": "6c420cd4-6c39-47e4-a3f1-82df06a154cd",
+            "title": "Clicking space between letters does nothing",
+            "description": null,
+            "isExceeds": false,
+            "order": 4
+          }
+        ]
+      },
+      {
+        "_id": "ce9aa893-cdd3-4645-8b94-094a12e24a81",
+        "title": "Game over",
+        "order": 4,
+        "requirements": [
+          {
+            "_id": "bb971b2f-ae59-4a7d-aa71-0de2f7fd69fe",
+            "title": "If a player makes 5 wrong guesses, the “lose” overlay is shown",
+            "description": null,
+            "isExceeds": false,
+            "order": 1
+          },
+          {
+            "_id": "401004e4-a3f4-4736-83a3-85792affd8ec",
+            "title": "If all the letters in the phrase are shown, the “win” overlay is shown",
+            "description": null,
+            "isExceeds": false,
+            "order": 2
+          },
+          {
+            "_id": "541d36a4-cbdc-44e3-8a42-f2768b39e6a7",
+            "title": "A button has been added to the “lose” and “win” overlays to reset the game",
+            "description": null,
+            "isExceeds": true,
+            "order": 3
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "_id": "13343440-d1f5-4742-b632-f58488829e00",
+    "title": "Public API Requests",
+    "projectNumber": 5,
+    "studyGuide": null,
+    "techdegree": {
+      "_id": "4d9c1678-9888-468a-acd8-3f93cca93804",
+      "name": "Full Stack JavaScript",
+      "abbr": "FSJS",
+      "color": "#3289F5"
+    },
+    "gradingSections": [
+      {
+        "_id": "21180eb3-08f4-4422-bb19-311b71921f3e",
+        "title": "API Usage",
+        "order": 1,
+        "requirements": [
+          {
+            "_id": "2f5f368c-69c9-49ba-a1ea-3d0c0216878c",
+            "title": "12 random users are pulled from the API in a single request",
+            "description": null,
+            "isExceeds": false,
+            "order": 1
+          },
+          {
+            "_id": "f40d1d57-ffae-46c2-929d-df57057e6d97",
+            "title": "New random employee information displays each time the page refreshes",
+            "description": null,
+            "isExceeds": false,
+            "order": 2
+          }
+        ]
+      },
+      {
+        "_id": "e178fcd4-a17f-44d5-8bb6-8091d702c025",
+        "title": "User Directory",
+        "order": 2,
+        "requirements": [
+          {
+            "_id": "cddc511a-6f35-4705-923b-59d55079d770",
+            "title": "The directory displays 12 users from the Random User API, and includes the following for each user: Image, First and Last Name, Email, City or location",
+            "description": null,
+            "isExceeds": false,
+            "order": 1
+          },
+          {
+            "_id": "08f8bea2-4ff0-4e2f-96aa-9ebeda178d05",
+            "title": "A search feature has been added so that employees can be filtered by name.",
+            "description": null,
+            "isExceeds": true,
+            "order": 2
+          }
+        ]
+      },
+      {
+        "_id": "480d19cb-3a73-4cb7-b0a0-82b11161ef04",
+        "title": "Modal Window",
+        "order": 3,
+        "requirements": [
+          {
+            "_id": "243d05e2-6e0e-4cda-b709-2d8e2c700d73",
+            "title": "Modal window displays at least the following details: Image, Name, Email, City or location, Cell Number, Detailed Address including street name and number, state or country and post code & Birthday",
+            "description": null,
+            "isExceeds": false,
+            "order": 1
+          },
+          {
+            "_id": "98048dc8-01f5-43e2-b49f-4bf16c2ee746",
+            "title": "There is a way to close the modal window.",
+            "description": null,
+            "isExceeds": false,
+            "order": 2
+          },
+          {
+            "_id": "624658f4-3cc9-4260-a357-7d146beb229a",
+            "title": "Functionality has been added to switch back and forth between employees when the detail modal window is open.",
+            "description": null,
+            "isExceeds": true,
+            "order": 3
+          },
+          {
+            "_id": "a98fcff2-8d57-43b0-a750-f4c05f4fe9ea",
+            "title": "No errors in the console when the end or beginning of the list is reached.",
+            "description": null,
+            "isExceeds": true,
+            "order": 4
+          }
+        ]
+      },
+      {
+        "_id": "c468233e-83da-4a13-be2c-1aab29db9752",
+        "title": "Structure, style and CSS",
+        "order": 4,
+        "requirements": [
+          {
+            "_id": "8246ac98-2f9b-4481-a942-1e6500e1dc94",
+            "title": "The major elements of the directory and modal window are in place and roughly match the mockups.",
+            "description": null,
+            "isExceeds": false,
+            "order": 1
+          },
+          {
+            "_id": "9cceb602-fd6d-49f4-a81b-76802965881d",
+            "title": "At least one of the following has been added or changed: color, background color, font, box or text shadows",
+            "description": null,
+            "isExceeds": true,
+            "order": 2
+          },
+          {
+            "_id": "b25400a7-aef5-40c6-8bca-628c724f029f",
+            "title": "Above style changes noted in the README.md file",
+            "description": null,
+            "isExceeds": true,
+            "order": 3
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "_id": "ddb3ef05-d4cb-4657-a439-9b0ea792e34c",
+    "title": "Connect to and Use a Public API",
+    "projectNumber": 8,
+    "studyGuide": "https://s3.amazonaws.com/treehouse-techdegree/fewd/study-guides/Employee+Directory+Study+Guide.pdf",
+    "techdegree": {
+      "_id": "e39af733-4db7-4a0a-9010-cb8555cda315",
+      "name": "Web Development",
+      "abbr": "WD",
+      "color": "#00AB9E"
+    },
+    "gradingSections": [
+      {
+        "_id": "423d6e9e-0e00-403a-8eea-150a78a030d3",
+        "title": "API Usage",
+        "order": 1,
+        "requirements": [
+          {
+            "_id": "27748f1d-1bb1-4c0c-8ce2-21a7adc9bdd3",
+            "title": "12 random users are pulled from the API in a single request",
+            "description": null,
+            "isExceeds": false,
+            "order": 1
+          },
+          {
+            "_id": "9f26511c-6cd1-4479-9a2c-0e66107e6944",
+            "title": "New random employee information displays each time the page refreshes",
+            "description": null,
+            "isExceeds": false,
+            "order": 2
+          }
+        ]
+      },
+      {
+        "_id": "1d827389-5cd8-4cd6-827c-461dc21079fe",
+        "title": "User Directory",
+        "order": 2,
+        "requirements": [
+          {
+            "_id": "30558b79-fe32-443c-9ac7-8f11f6032bcf",
+            "title": "The directory displays 12 users from the Random User API, and includes the following for each user: Image, First and Last Name, Email, City or location",
+            "description": null,
+            "isExceeds": false,
+            "order": 1
+          },
+          {
+            "_id": "5719e74f-f568-4d7e-902e-7268497e8281",
+            "title": "A search feature has been added so that employees can be filtered by name.",
+            "description": null,
+            "isExceeds": true,
+            "order": 2
+          }
+        ]
+      },
+      {
+        "_id": "bcaa7c3c-e1cd-46ec-8375-8e8a3a0e8b3d",
+        "title": "Modal Window",
+        "order": 3,
+        "requirements": [
+          {
+            "_id": "7922e19c-9924-406e-ad57-9734473e577b",
+            "title": "Modal window displays at least the following details: Image, Name, Email, City or location, Cell Number, Detailed Address including street name and number, state or country and post code & Birthday",
+            "description": null,
+            "isExceeds": false,
+            "order": 1
+          },
+          {
+            "_id": "887a9bdd-e212-4238-8abc-15f04b5394fb",
+            "title": "There is a way to close the modal window.",
+            "description": null,
+            "isExceeds": false,
+            "order": 2
+          },
+          {
+            "_id": "c613c80b-eaa4-4359-9e36-d4e1fa90aa57",
+            "title": "Functionality has been added to switch back and forth between employees when the detail modal window is open.",
+            "description": null,
+            "isExceeds": true,
+            "order": 3
+          }
+        ]
+      },
+      {
+        "_id": "08e75fd6-498c-4c07-a191-b40915ea9d38",
+        "title": "Matching the Mockups",
+        "order": 4,
+        "requirements": [
+          {
+            "_id": "f9158380-d893-4944-a045-17f556722e95",
+            "title": "The major elements of the directory and modal window are in place and roughly match the mockups.",
+            "description": null,
+            "isExceeds": false,
+            "order": 1
+          }
+        ]
+      }
+    ]
+  }
+]

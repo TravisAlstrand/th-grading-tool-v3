@@ -1,0 +1,75 @@
+[
+  {
+    "_id": "70dd7eed-2829-4210-ae96-94c63f54ea03",
+    "name": "Front End Web Development",
+    "abbr": "FEWD",
+    "color": "#5FCF80",
+    "projects": [
+      {
+        "_id": "b8284cd8-ae69-4c33-8b6d-ea1c97d256ca",
+        "title": "An Interactive Photo Gallery",
+        "projectNumber": 5,
+        "requirementCount": 8,
+        "exceedsCount": 2
+      },
+      {
+        "_id": "57d592e8-4d55-4707-9ecc-0550361e95c8",
+        "title": "Game Show App",
+        "projectNumber": 6,
+        "requirementCount": 14,
+        "exceedsCount": 2
+      },
+      {
+        "_id": "877f286b-9eca-4607-b951-49ad6d2886a5",
+        "title": "Capstone Portfolio",
+        "projectNumber": 9,
+        "requirementCount": 13,
+        "exceedsCount": 4
+      }
+    ]
+  },
+  {
+    "_id": "4d9c1678-9888-468a-acd8-3f93cca93804",
+    "name": "Full Stack JavaScript",
+    "abbr": "FSJS",
+    "color": "#3289F5",
+    "projects": [
+      {
+        "_id": "13343440-d1f5-4742-b632-f58488829e00",
+        "title": "Public API Requests",
+        "projectNumber": 5,
+        "requirementCount": 11,
+        "exceedsCount": 5
+      },
+      {
+        "_id": "534f64e6-2b3e-4db9-82b1-bb7ddece795e",
+        "title": "Static Node.js and Express Site",
+        "projectNumber": 6,
+        "requirementCount": 17,
+        "exceedsCount": 5
+      }
+    ]
+  },
+  {
+    "_id": "e39af733-4db7-4a0a-9010-cb8555cda315",
+    "name": "Web Development",
+    "abbr": "WD",
+    "color": "#00AB9E",
+    "projects": [
+      {
+        "_id": "ddb3ef05-d4cb-4657-a439-9b0ea792e34c",
+        "title": "Connect to and Use a Public API",
+        "projectNumber": 8,
+        "requirementCount": 8,
+        "exceedsCount": 2
+      },
+      {
+        "_id": "f941c048-8d91-457e-b8a8-756fd7223d75",
+        "title": "Develop a Node Static Site with Express",
+        "projectNumber": 9,
+        "requirementCount": 17,
+        "exceedsCount": 5
+      }
+    ]
+  }
+]
