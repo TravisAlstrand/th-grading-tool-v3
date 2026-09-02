@@ -2,7 +2,7 @@ import { useCallback, useEffect, useMemo, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useReviewContext } from './ReviewLayout'
 import { flatRequirements, sectionStatus } from '@/review/selectors'
-import { takesNote } from '@/review/grades'
+import { GRADES, takesNote } from '@/review/grades'
 import { useGradingKeys } from '@/review/useGradingKeys'
 import type { Grade } from '@/review/types'
 import { usePaletteOpen } from '@/components/CommandPalette'
@@ -19,7 +19,6 @@ const DOT: Record<Grade | 'unreviewed', string> = {
   met: 'bg-met',
   questioned: 'bg-questioned',
   needs: 'bg-needs',
-  skipped: 'bg-edge-2 opacity-50',
   unreviewed: 'bg-edge-2',
 }
 
@@ -27,7 +26,44 @@ const SEG: Record<Grade, string> = {
   met: 'bg-met',
   questioned: 'bg-questioned',
   needs: 'bg-needs',
-  skipped: 'bg-edge-2',
+}
+
+/**
+ * The section header was `Label`-sized — 11px uppercase against 15px
+ * requirement text — so it read as quieter than the rows it was organising.
+ * It is now the largest thing in the column, and carries its own progress so
+ * you can see where you are in a section without counting rows.
+ */
+function SectionHeader({
+  index,
+  title,
+  total,
+  graded,
+}: {
+  index: number
+  title: string
+  total: number
+  graded: number
+}) {
+  const done = total > 0 && graded === total
+  return (
+    <div className="sticky top-0 z-2 flex items-center gap-3 border-b border-line bg-sechead px-6 pt-[22px] pb-[14px] max-rails:px-4 max-rails:pt-4 max-rails:pb-3">
+      <span className="font-mono text-[16px] font-semibold text-accent">
+        {String(index + 1).padStart(2, '0')}
+      </span>
+      <h2 className="m-0 font-mono text-[16px] font-bold tracking-[.1em] text-ink uppercase">
+        {title}
+      </h2>
+      <span
+        className={cn(
+          'ml-auto shrink-0 font-mono text-[11.5px]',
+          done ? 'text-met' : 'text-ink-4',
+        )}
+      >
+        {graded} of {total} graded
+      </span>
+    </div>
+  )
 }
 
 export function Grading() {
@@ -82,7 +118,7 @@ export function Grading() {
       }
       const n = tally.unreviewed
       dispatch({ type: 'markRemainingMet' })
-      flash(`Marked ${n} as met`)
+      flash(`Marked ${n} as ${GRADES.met.word}`)
     },
     onEditNote: () => {
       if (!takesNote(focusedEntry?.grade)) {
@@ -107,20 +143,20 @@ export function Grading() {
   return (
     <>
       {/* Top bar */}
-      <div className="flex shrink-0 flex-wrap items-center gap-[18px] border-b border-line bg-panel px-6 py-3 max-rails:gap-3 max-rails:px-4 max-rails:py-2.5">
+      <div className="flex shrink-0 flex-wrap items-center gap-[20px] border-b border-line bg-panel px-6 py-3 max-rails:gap-3 max-rails:px-4 max-rails:py-2.5">
         <Button onClick={() => navigate('/')}>← Projects</Button>
         <span className="tdchip" />
         <div className="flex min-w-0 flex-col gap-px">
-          <span className="truncate text-[14px] font-semibold tracking-[-.01em]">
+          <span className="truncate text-[15.5px] font-semibold tracking-[-.01em]">
             {project.title}
           </span>
-          <span className="font-mono text-[10.5px] text-ink-4">
+          <span className="font-mono text-[11.5px] text-ink-4">
             {tdName} · project {String(project.projectNumber ?? 0).padStart(2, '0')} · {tally.total}{' '}
             {plural(tally.total, 'requirement')}
           </span>
         </div>
 
-        <div className="flex min-w-0 max-w-[420px] flex-1 gap-[3px] max-rails:max-w-none">
+        <div className="flex min-w-0 max-w-[462px] flex-1 gap-[3.5px] max-rails:max-w-none">
           {list.map(({ req }) => {
             const grade = review.grades[req._id]?.grade
             const focused = req._id === review.focusReqId
@@ -137,7 +173,7 @@ export function Grading() {
         </div>
 
         <span
-          className={cn('font-mono text-[11px]', saveFailed ? 'text-needs' : 'text-ink-4')}
+          className={cn('font-mono text-[12px]', saveFailed ? 'text-needs' : 'text-ink-4')}
           data-testid="save-state"
         >
           {saveFailed
@@ -159,10 +195,10 @@ export function Grading() {
             }
             const n = tally.unreviewed
             dispatch({ type: 'markRemainingMet' })
-            flash(`Marked ${n} as met`)
+            flash(`Marked ${n} as ${GRADES.met.word}`)
           }}
         >
-          Mark remaining as met
+          Mark remaining as {GRADES.met.label.toLowerCase()}
           <Kbd>M</Kbd>
         </Button>
 
@@ -177,7 +213,7 @@ export function Grading() {
 
       {/* Section rail · requirements · live output */}
       <div className="flex min-h-0 flex-1">
-        <div className="flex w-[236px] shrink-0 flex-col border-r border-line bg-panel max-rails:hidden">
+        <div className="flex w-[260px] shrink-0 flex-col border-r border-line bg-panel max-rails:hidden">
           <div className="flex min-h-0 flex-1 flex-col gap-0.5 overflow-y-auto px-2.5 py-4">
             <Label className="px-2.5 pb-2.5">Sections</Label>
             {project.gradingSections?.map((section, i) => {
@@ -191,7 +227,7 @@ export function Grading() {
                   type="button"
                   aria-current={inSection}
                   className={cn(
-                    'flex w-full items-center gap-[11px] rounded-[7px] p-2.5 text-left text-[13px]',
+                    'flex w-full items-center gap-[12px] rounded-[7.5px] p-2.5 text-left text-[14.5px]',
                     inSection ? 'bg-surface-2 font-semibold text-ink' : 'text-ink-2 hover:bg-surface',
                   )}
                   onClick={() => {
@@ -201,7 +237,7 @@ export function Grading() {
                 >
                   <span
                     className={cn(
-                      'font-mono text-[10.5px]',
+                      'font-mono text-[11.5px]',
                       inSection ? 'text-accent' : 'text-ink-4',
                     )}
                   >
@@ -209,7 +245,7 @@ export function Grading() {
                   </span>
                   <span className="truncate">{section.title}</span>
                   <span
-                    className="ml-auto flex shrink-0 gap-[3px]"
+                    className="ml-auto flex shrink-0 gap-[3.5px]"
                     aria-label={`${section.title}: ${status}`}
                   >
                     {(section.requirements ?? []).map((r) => {
@@ -219,7 +255,7 @@ export function Grading() {
                         <span
                           key={r._id}
                           className={cn(
-                            'h-[5px] w-[5px] rounded-full',
+                            'h-[5.5px] w-[5.5px] rounded-full',
                             focused ? 'bg-ink' : DOT[g ?? 'unreviewed'],
                           )}
                         />
@@ -238,15 +274,14 @@ export function Grading() {
         <div className="min-w-0 flex-1 overflow-y-auto">
           {project.gradingSections?.map((section, sectionIndex) => (
             <div key={section._id}>
-              <div className="sticky top-0 z-2 flex items-center gap-2.5 border-b border-line bg-sechead px-6 pt-3.5 pb-[11px] max-rails:px-4 max-rails:pt-3 max-rails:pb-2.5">
-                <Label className="!text-accent">
-                  {String(sectionIndex + 1).padStart(2, '0')} · {section.title}
-                </Label>
-                <span className="font-mono text-[10.5px] text-ink-4">
-                  {section.requirements?.length ?? 0}{' '}
-                  {plural(section.requirements?.length ?? 0, 'requirement')}
-                </span>
-              </div>
+              <SectionHeader
+                index={sectionIndex}
+                title={section.title}
+                total={section.requirements?.length ?? 0}
+                graded={
+                  (section.requirements ?? []).filter((r) => review.grades[r._id]?.grade).length
+                }
+              />
               {(section.requirements ?? []).map((req) => {
                 const focused = req._id === review.focusReqId
                 return (
@@ -276,14 +311,15 @@ export function Grading() {
       </div>
 
       {/* Status bar */}
-      <div className="flex shrink-0 items-center gap-5 border-t border-line bg-panel px-6 py-[9px] font-mono text-[11px] text-ink-4 max-rails:gap-3 max-rails:px-4 max-rails:text-[10px]">
-        <span className="text-met">{tally.met} met</span>
+      <div className="flex shrink-0 items-center gap-5 border-t border-line bg-panel px-6 py-[10px] font-mono text-[12px] text-ink-4 max-rails:gap-3 max-rails:px-4 max-rails:text-[11px]">
+        <span className="text-met">
+          {tally.met} {GRADES.met.word}
+        </span>
         <span className="text-questioned">{tally.questioned} questioned</span>
         <span className="text-needs">{tally.needs} needs work</span>
-        {tally.skipped > 0 && <span>{tally.skipped} not attempted</span>}
         <span data-testid="unreviewed-count">{tally.unreviewed} unreviewed</span>
         <span className="ml-auto">
-          J K move · 1 2 3 0 grade · same key clears · E note · M mark rest · {chord('Z')} undo ·{' '}
+          J K move · 1 2 3 grade · same key clears · E note · M mark rest · {chord('Z')} undo ·{' '}
           {chord('K')} search · {chord(ENTER)} review
         </span>
       </div>

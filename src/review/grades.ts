@@ -1,20 +1,18 @@
 import type { Grade } from './types'
 
 export const GRADES: Record<Grade, { label: string; key: string; word: string }> = {
-  met: { label: 'Met', key: '1', word: 'met' },
+  met: { label: 'Passed', key: '1', word: 'passed' },
   questioned: { label: 'Questionable', key: '2', word: 'questioned' },
   needs: { label: 'Needs work', key: '3', word: 'needs work' },
-  skipped: { label: 'Not attempted', key: '0', word: 'not attempted' },
 }
 
 /** Output order, and the order the grade buttons appear in. */
-export const GRADE_ORDER: Grade[] = ['met', 'questioned', 'needs', 'skipped']
+export const GRADE_ORDER: Grade[] = ['met', 'questioned', 'needs']
 
 export const KEY_TO_GRADE: Record<string, Grade> = {
   '1': 'met',
   '2': 'questioned',
   '3': 'needs',
-  '0': 'skipped',
 }
 
 /** The two grades that carry written feedback. */

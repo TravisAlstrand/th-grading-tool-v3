@@ -1,4 +1,4 @@
-import type { Draft, Grade, Grades, Review, TemplateId } from './types'
+import type { Draft, Grades, Review, TemplateId } from './types'
 import { DEFAULT_CLOSING, DEFAULT_OPENING } from './grades'
 
 /**
@@ -13,7 +13,19 @@ import { DEFAULT_CLOSING, DEFAULT_OPENING } from './grades'
 
 export const DRAFT_PREFIX = 'grading-tool:draft:'
 
-const VALID_GRADES: Grade[] = ['met', 'questioned', 'needs', 'skipped']
+/**
+ * 'skipped' was a fourth grade until it was folded into needs-work. A draft
+ * saved before that still carries it, and rejecting it here would fail
+ * isGrades() and discard the entire review — so it is migrated in place.
+ */
+function migrate(grades: Grades): Grades {
+  const out: Grades = {}
+  for (const [reqId, entry] of Object.entries(grades)) {
+    out[reqId] =
+      (entry.grade as string) === 'skipped' ? { ...entry, grade: 'needs' } : entry
+  }
+  return out
+}
 
 function storage(): Storage | null {
   try {
@@ -29,7 +41,9 @@ function isGrades(value: unknown): value is Grades {
     (entry) =>
       !!entry &&
       typeof entry === 'object' &&
-      VALID_GRADES.includes((entry as { grade?: Grade }).grade as Grade) &&
+      ['met', 'questioned', 'needs', 'skipped'].includes(
+        (entry as { grade?: string }).grade as string,
+      ) &&
       typeof (entry as { note?: unknown }).note === 'string',
   )
 }
@@ -43,7 +57,7 @@ export function parseDraft(value: unknown): Draft | null {
   return {
     projectId: d.projectId,
     techdegreeId: typeof d.techdegreeId === 'string' ? d.techdegreeId : null,
-    grades: d.grades,
+    grades: migrate(d.grades),
     focusReqId: typeof d.focusReqId === 'string' ? d.focusReqId : null,
     opening: typeof d.opening === 'string' ? d.opening : DEFAULT_OPENING,
     closing: typeof d.closing === 'string' ? d.closing : DEFAULT_CLOSING,

@@ -49,12 +49,12 @@ export function ReviewLayout() {
   if (!session.requirementIds.length) {
     return (
       <div className="grid flex-1 place-items-center p-8">
-        <div className="flex max-w-[460px] flex-col items-start gap-3">
+        <div className="flex max-w-[506px] flex-col items-start gap-3">
           <span className="label">Nothing to grade</span>
-          <p className="m-0 text-[15px] font-semibold text-ink">
+          <p className="m-0 text-[16.5px] font-semibold text-ink">
             {project.title} has no requirements yet.
           </p>
-          <p className="m-0 text-[13px] leading-relaxed text-ink-3">
+          <p className="m-0 text-[14.5px] leading-relaxed text-ink-3">
             The project exists in Sanity but no grading sections or requirements are attached to it.
           </p>
           <Button className="mt-1" onClick={() => navigate('/')}>

@@ -13,8 +13,8 @@ export function Logo({ className }: { className?: string }) {
   return (
     <img
       src={logoUrl}
-      width="20"
-      height="20"
+      width="22"
+      height="22"
       alt=""
       aria-hidden="true"
       className={cn('shrink-0', className)}
@@ -35,9 +35,9 @@ export function Button({ variant = 'default', size = 'default', className, ...re
     <button
       type="button"
       className={cn(
-        'inline-flex items-center gap-[9px] rounded-[7px] border text-[12.5px]',
+        'inline-flex items-center gap-[10px] rounded-[7.5px] border text-[14px]',
         'transition-colors duration-100',
-        size === 'default' && 'px-[15px] py-2',
+        size === 'default' && 'px-[16.5px] py-2',
         size === 'icon' && 'px-2 py-2',
         variant === 'default' && 'border-edge text-ink-3 hover:bg-surface hover:text-ink-2',
         variant === 'primary' &&

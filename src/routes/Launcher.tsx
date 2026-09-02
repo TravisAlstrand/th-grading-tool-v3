@@ -57,13 +57,13 @@ export function Launcher() {
   return (
     <div className="flex min-h-0 flex-1">
       {/* Techdegree rail */}
-      <div className="flex w-[268px] shrink-0 flex-col border-r border-line bg-panel max-rails:hidden">
-        <div className="flex items-center gap-2.5 border-b border-line p-[18px] font-bold tracking-[-.01em]">
+      <div className="flex w-[295px] shrink-0 flex-col border-r border-line bg-panel max-rails:hidden">
+        <div className="flex items-center gap-2.5 border-b border-line p-[20px] font-bold tracking-[-.01em]">
           <Logo />
           Grading Tool v3
           <Kbd className="ml-auto">{chord('K')}</Kbd>
         </div>
-        <Label className="px-[18px] pt-4 pb-2">Techdegrees</Label>
+        <Label className="px-[20px] pt-4 pb-2">Techdegrees</Label>
         <div className="flex flex-col gap-0.5 overflow-y-auto p-2">
           {techdegrees.map((td) => (
             <button
@@ -71,7 +71,7 @@ export function Launcher() {
               type="button"
               aria-current={td._id === active?._id}
               className={cn(
-                'flex w-full items-center gap-[11px] rounded-[7px] p-2.5 text-left text-[13.5px]',
+                'flex w-full items-center gap-[12px] rounded-[7.5px] p-2.5 text-left text-[15px]',
                 td._id === active?._id
                   ? 'bg-surface-2 font-semibold text-ink'
                   : 'text-ink-2 hover:bg-surface',
@@ -79,19 +79,19 @@ export function Launcher() {
               onClick={() => setSearchParams({ td: td._id })}
             >
               <span
-                className="h-[18px] w-[3px] shrink-0 rounded-sm"
+                className="h-[20px] w-[3.5px] shrink-0 rounded-sm"
                 style={{ background: td.color ?? '#6FD3B4' }}
               />
               <span className="truncate">{td.name}</span>
-              <span className="ml-auto font-mono text-[11px] text-ink-4">
+              <span className="ml-auto font-mono text-[12px] text-ink-4">
                 {td.projects?.length ?? 0}
               </span>
             </button>
           ))}
         </div>
-        <div className="mt-auto flex items-center gap-2.5 border-t border-line p-2.5 text-[12.5px] text-ink-3">
+        <div className="mt-auto flex items-center gap-2.5 border-t border-line p-2.5 text-[14px] text-ink-3">
           <ThemeToggle />
-          <span className="ml-auto font-mono text-[10.5px] text-questioned">
+          <span className="ml-auto font-mono text-[11.5px] text-questioned">
             {knownDrafts.length} {plural(knownDrafts.length, 'draft')}
           </span>
         </div>
@@ -99,35 +99,35 @@ export function Launcher() {
 
       {/* Project table */}
       <div className="flex min-h-0 min-w-0 flex-1 flex-col">
-        <div className="border-b border-line px-8 pt-6 pb-[18px] max-rails:px-[18px]">
+        <div className="border-b border-line px-8 pt-6 pb-[20px] max-rails:px-[20px]">
           <div className="flex items-center gap-2.5">
             <span
               className="h-2 w-2 rounded-sm"
               style={{ background: active?.color ?? '#6FD3B4' }}
             />
-            <h1 className="m-0 text-[22px] font-bold tracking-[-.015em]">{active?.name}</h1>
+            <h1 className="m-0 text-[24px] font-bold tracking-[-.015em]">{active?.name}</h1>
             {/* The techdegree rail carries the toggle; this one covers the
                 widths where that rail is hidden. */}
             <ThemeToggle className="ml-auto rails:hidden" />
           </div>
-          <p className="mt-[5px] mb-0 text-[13px] text-ink-3">
+          <p className="mt-[5.5px] mb-0 text-[14.5px] text-ink-3">
             {active?.projects?.length ?? 0} {plural(active?.projects?.length ?? 0, 'project')} ·
             press <span className="font-mono">{chord('K')}</span> to search every techdegree
           </p>
         </div>
 
-        <div className="flex-1 overflow-y-auto px-8 py-5 max-rails:px-[18px]">
+        <div className="flex-1 overflow-y-auto px-8 py-5 max-rails:px-[20px]">
           {knownDrafts.slice(0, 3).map((draft) => {
             const found = byProjectId.get(draft.projectId)!
             const reviewed = Object.keys(draft.grades).length
             return (
               <div
                 key={draft.projectId}
-                className="mb-5 flex flex-wrap items-center gap-4 rounded-[9px] border border-resume-edge bg-resume px-[18px] py-[13px]"
+                className="mb-5 flex flex-wrap items-center gap-4 rounded-[10px] border border-resume-edge bg-resume px-[20px] py-[14.5px]"
               >
                 <Label className="!text-accent">Resume</Label>
-                <span className="text-[13.5px] font-semibold">{found.project.title}</span>
-                <span className="text-[12.5px] text-ink-3">
+                <span className="text-[15px] font-semibold">{found.project.title}</span>
+                <span className="text-[14px] text-ink-3">
                   {reviewed} of {found.project.requirementCount} reviewed · saved{' '}
                   {ago(draft.updatedAt)}
                 </span>
@@ -151,7 +151,7 @@ export function Launcher() {
             />
           ) : (
             <div className="flex flex-col">
-              <div className="grid grid-cols-[44px_minmax(0,1fr)_130px_100px] items-center gap-4 border-b border-line px-3 pb-2.5 font-mono text-[10px] tracking-[.12em] text-ink-4 uppercase max-rails:grid-cols-[36px_minmax(0,1fr)_90px]">
+              <div className="grid grid-cols-[48px_minmax(0,1fr)_143px_110px] items-center gap-4 border-b border-line px-3 pb-2.5 font-mono text-[11px] tracking-[.12em] text-ink-4 uppercase max-rails:grid-cols-[39.5px_minmax(0,1fr)_99px]">
                 <span>#</span>
                 <span>Project</span>
                 <span>Requirements</span>
@@ -161,17 +161,17 @@ export function Launcher() {
                 <button
                   key={project._id}
                   type="button"
-                  className="grid w-full grid-cols-[44px_minmax(0,1fr)_130px_100px] items-center gap-4 border-b border-line-soft p-3 text-left text-ink-2 hover:bg-surface max-rails:grid-cols-[36px_minmax(0,1fr)_90px]"
+                  className="grid w-full grid-cols-[48px_minmax(0,1fr)_143px_110px] items-center gap-4 border-b border-line-soft p-3 text-left text-ink-2 hover:bg-surface max-rails:grid-cols-[39.5px_minmax(0,1fr)_99px]"
                   onClick={() => navigate(`/review/${project._id}`)}
                 >
-                  <span className="font-mono text-[12px] text-ink-4">
+                  <span className="font-mono text-[13px] text-ink-4">
                     {String(project.projectNumber ?? 0).padStart(2, '0')}
                   </span>
-                  <span className="truncate text-[14px]">{project.title}</span>
-                  <span className="font-mono text-[12.5px] text-ink-3">
+                  <span className="truncate text-[15.5px]">{project.title}</span>
+                  <span className="font-mono text-[14px] text-ink-3">
                     {project.requirementCount}
                   </span>
-                  <span className="font-mono text-[12.5px] text-ink-3 max-rails:hidden">
+                  <span className="font-mono text-[14px] text-ink-3 max-rails:hidden">
                     {project.exceedsCount}
                   </span>
                 </button>

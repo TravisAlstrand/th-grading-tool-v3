@@ -40,20 +40,18 @@ describe('buildReview', () => {
     expect(text.indexOf(titleOf(id(1)))).toBeLessThan(text.indexOf(titleOf(id(2))))
   })
 
-  it('groups by grade in met, questioned, needs, not-attempted order', () => {
+  it('groups by grade in passed, questioned, needs-work order', () => {
     const review = reviewFor(
       GAME_SHOW,
       gradesFrom([
         [id(0), 'needs', 'Only three phrases.'],
         [id(1), 'met'],
         [id(2), 'questioned', 'Some phrases have digits.'],
-        [id(3), 'skipped'],
       ]),
     )
     const { text } = buildReview(review, GAME_SHOW)
     expect(text.indexOf(':meets:')).toBeLessThan(text.indexOf(':questioned:'))
     expect(text.indexOf(':questioned:')).toBeLessThan(text.indexOf(':needs-work:'))
-    expect(text.indexOf(':needs-work:')).toBeLessThan(text.indexOf(':not-attempted:'))
   })
 
   it('quotes a note under its requirement, one "> " per line', () => {
@@ -88,6 +86,29 @@ describe('buildReview', () => {
         '> Same in the loop below.',
       ].join('\n'),
     )
+  })
+
+  it('leaves a note out of the review when the grade carries no feedback', () => {
+    // Written under needs-work, then the grade switched to passing. The text
+    // stays in the draft, but it is not part of what the student reads.
+    const review = reviewFor(
+      GAME_SHOW,
+      gradesFrom([[id(1), 'met', 'Only three phrases. Add two more.']]),
+    )
+    const { text, groups } = buildReview(review, GAME_SHOW)
+    expect(text).not.toContain('Only three phrases')
+    expect(text).not.toContain('>')
+    expect(text).toContain(`:meets:${titleOf(id(1))}`)
+    // groups feed the send screen, so they must not disagree with the text.
+    expect(groups.met[0]?.note).toBe('')
+  })
+
+  it('uses the note again as soon as the grade takes one back', () => {
+    const kept = 'Only three phrases. Add two more.'
+    const passing = reviewFor(GAME_SHOW, gradesFrom([[id(1), 'met', kept]]))
+    const flagged = reviewFor(GAME_SHOW, gradesFrom([[id(1), 'needs', kept]]))
+    expect(buildReview(passing, GAME_SHOW).text).not.toContain(kept)
+    expect(buildReview(flagged, GAME_SHOW).text).toContain(`> ${kept}`)
   })
 
   it('trims whitespace-only notes rather than emitting an empty quote', () => {
@@ -147,7 +168,6 @@ describe('buildReview', () => {
     expect(groups.met.map((i) => i.req._id)).toEqual([idsOf(PUBLIC_API)[0]])
     expect(groups.questioned[0]?.note).toBe('Search only matches first names.')
     expect(groups.needs).toEqual([])
-    expect(groups.skipped).toEqual([])
   })
 
   it('always ends with exactly one trailing newline', () => {

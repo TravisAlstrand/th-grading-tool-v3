@@ -1,5 +1,5 @@
 import type { ProjectDetail, Requirement } from '@/sanity/types'
-import { GRADE_ORDER } from './grades'
+import { GRADE_ORDER, takesNote } from './grades'
 import { flatRequirements } from './selectors'
 import { getTemplate, type Template } from './templates'
 import type { Grade, Review } from './types'
@@ -29,12 +29,16 @@ export type BuiltReview = {
 export function buildReview(review: Review, project: ProjectDetail | null | undefined): BuiltReview {
   const template: Template = getTemplate(review.template)
 
-  const groups: ReviewGroups = { met: [], questioned: [], needs: [], skipped: [] }
+  const groups: ReviewGroups = { met: [], questioned: [], needs: [] }
 
   for (const { req } of flatRequirements(project)) {
     const entry = review.grades[req._id]
     if (!entry?.grade) continue
-    groups[entry.grade].push({ req, note: (entry.note ?? '').trim() })
+    // A note written under questionable/needs-work is kept in the draft when
+    // the grade changes, so it survives a mis-click — but it is not part of
+    // the review under a grade that carries no feedback.
+    const note = takesNote(entry.grade) ? (entry.note ?? '').trim() : ''
+    groups[entry.grade].push({ req, note })
   }
 
   // Within a group, plain requirements come before exceeds ones — a student

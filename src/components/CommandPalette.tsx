@@ -106,14 +106,14 @@ function CommandPalette() {
         role="dialog"
         aria-modal="true"
         aria-label="Search projects"
-        className="flex max-h-[60vh] w-[min(620px,92vw)] flex-col overflow-hidden rounded-xl border border-edge bg-panel shadow-pop"
+        className="flex max-h-[60vh] w-[min(682px,92vw)] flex-col overflow-hidden rounded-xl border border-edge bg-panel shadow-pop"
       >
         <input
           ref={inputRef}
           value={query}
           placeholder="Search every project…"
           aria-label="Search every project"
-          className="border-0 border-b border-line bg-transparent px-[18px] py-[15px] text-[15px] text-ink outline-none placeholder:text-ink-4"
+          className="border-0 border-b border-line bg-transparent px-[20px] py-[16.5px] text-[16.5px] text-ink outline-none placeholder:text-ink-4"
           onChange={(e) => {
             setQuery(e.target.value)
             setIndex(0)
@@ -144,25 +144,25 @@ function CommandPalette() {
                 type="button"
                 data-active={String(i === index)}
                 className={cn(
-                  'flex w-full items-center gap-[11px] rounded-[7px] px-3 py-[9px] text-left text-[13.5px] text-ink-2',
+                  'flex w-full items-center gap-[12px] rounded-[7.5px] px-3 py-[10px] text-left text-[15px] text-ink-2',
                   i === index && 'bg-surface-2 text-ink',
                 )}
                 onMouseEnter={() => setIndex(i)}
                 onClick={() => choose(item)}
               >
                 <span
-                  className="h-4 w-[3px] shrink-0 rounded-sm"
+                  className="h-4 w-[3.5px] shrink-0 rounded-sm"
                   style={{ background: item.color }}
                 />
                 <span className="truncate">{item.title}</span>
-                <span className="ml-auto shrink-0 font-mono text-[11px] text-ink-4">
+                <span className="ml-auto shrink-0 font-mono text-[12px] text-ink-4">
                   {item.meta}
                 </span>
               </button>
             ))}
           </div>
         ) : (
-          <div className="p-[22px] text-center text-[13px] text-ink-4">
+          <div className="p-[24px] text-center text-[14.5px] text-ink-4">
             {data ? 'No projects match that.' : 'Still loading projects…'}
           </div>
         )}

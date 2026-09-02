@@ -85,7 +85,6 @@ export const SLACK_TEMPLATE: Template = {
     met: ':meets:',
     questioned: ':questioned:',
     needs: ':needs-work:',
-    skipped: ':not-attempted:',
   },
   exceeds: ':exceeds: ',
   gap: '',

@@ -72,8 +72,8 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
 function SunIcon() {
   return (
     <svg
-      width="15"
-      height="15"
+      width="16.5"
+      height="16.5"
       viewBox="0 0 24 24"
       fill="none"
       stroke="currentColor"
@@ -91,8 +91,8 @@ function SunIcon() {
 function MoonIcon() {
   return (
     <svg
-      width="15"
-      height="15"
+      width="16.5"
+      height="16.5"
       viewBox="0 0 24 24"
       fill="none"
       stroke="currentColor"

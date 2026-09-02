@@ -28,7 +28,6 @@ export function tally(ids: string[], grades: Grades): Tally {
     met: 0,
     questioned: 0,
     needs: 0,
-    skipped: 0,
     unreviewed: 0,
     reviewed: 0,
     total: ids.length,
@@ -52,7 +51,8 @@ export function sectionStatus(section: GradingSection, grades: Grades): Grade | 
   if (reqs.some((r) => grades[r._id]?.grade === 'needs')) return 'needs'
   if (reqs.some((r) => grades[r._id]?.grade === 'questioned')) return 'questioned'
   if (reqs.some((r) => grades[r._id]?.grade === 'met')) return 'met'
-  return 'skipped'
+  // Everything graded and nothing flagged: the section passed.
+  return 'met'
 }
 
 export function countExceeds(project: ProjectDetail | null | undefined): number {

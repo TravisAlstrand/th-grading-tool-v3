@@ -51,8 +51,8 @@ describe('reviewReducer', () => {
       expect(state.review.focusReqId).toBe(id(1))
     })
 
-    it('advances after not-attempted too — passing is meant to be free', () => {
-      const state = reviewReducer(start(), { type: 'grade', reqId: id(0), grade: 'skipped' })
+    it('advances after a passing grade — passing is meant to be free', () => {
+      const state = reviewReducer(start(), { type: 'grade', reqId: id(0), grade: 'met' })
       expect(state.review.focusReqId).toBe(id(1))
     })
 

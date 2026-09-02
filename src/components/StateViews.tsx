@@ -12,7 +12,7 @@ import { Button, Label } from './primitives'
 function Frame({ children }: { children: React.ReactNode }) {
   return (
     <div className="grid flex-1 place-items-center p-8">
-      <div className="flex max-w-[460px] flex-col items-start gap-3">{children}</div>
+      <div className="flex max-w-[506px] flex-col items-start gap-3">{children}</div>
     </div>
   )
 }
@@ -21,7 +21,7 @@ export function LoadingState({ label = 'Loading rubrics' }: { label?: string }) 
   return (
     <Frame>
       <Label>{label}…</Label>
-      <div className="flex w-[320px] flex-col gap-2" aria-hidden="true">
+      <div className="flex w-[352px] flex-col gap-2" aria-hidden="true">
         {[100, 78, 88, 62].map((w, i) => (
           <div
             key={w}
@@ -38,8 +38,8 @@ export function EmptyState({ title, body }: { title: string; body?: string }) {
   return (
     <Frame>
       <Label>Nothing here</Label>
-      <p className="m-0 text-[15px] font-semibold text-ink">{title}</p>
-      {body && <p className="m-0 text-[13px] leading-relaxed text-ink-3">{body}</p>}
+      <p className="m-0 text-[16.5px] font-semibold text-ink">{title}</p>
+      {body && <p className="m-0 text-[14.5px] leading-relaxed text-ink-3">{body}</p>}
     </Frame>
   )
 }
@@ -56,11 +56,11 @@ export function ErrorState({ error, onRetry }: { error: unknown; onRetry?: () =>
   return (
     <Frame>
       <Label className="!text-needs">Could not load</Label>
-      <p className="m-0 text-[15px] font-semibold text-ink">{message}</p>
+      <p className="m-0 text-[16.5px] font-semibold text-ink">{message}</p>
       {status !== null && (
-        <p className="m-0 font-mono text-[11px] text-ink-4">HTTP {status}</p>
+        <p className="m-0 font-mono text-[12px] text-ink-4">HTTP {status}</p>
       )}
-      <p className="m-0 text-[13px] leading-relaxed text-ink-3">
+      <p className="m-0 text-[14.5px] leading-relaxed text-ink-3">
         Any review you had open is still saved — nothing has been lost.
       </p>
       {onRetry && (

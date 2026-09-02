@@ -194,6 +194,80 @@ async function main() {
     await page.evaluate(() => document.activeElement?.tagName !== 'TEXTAREA'),
   )
 
+  /* ---------------- reading the list ---------------- */
+
+  section('The list stays readable')
+  const listState = await page.evaluate(() => {
+    const visible = (el) => {
+      const r = el.getBoundingClientRect()
+      return r.width > 2 && r.height > 2
+    }
+    const statuses = [...document.querySelectorAll('[data-testid="requirement"]')].map((row) => {
+      const word = [...row.querySelectorAll('span')].find((sp) =>
+        ['passed', 'questioned', 'needs work', 'unreviewed'].includes(
+          sp.textContent.trim(),
+        ),
+      )
+      return { grade: row.dataset.grade, word: word?.textContent.trim(), shown: word ? visible(word) : false }
+    })
+    const header = [...document.querySelectorAll('h2')][0]
+    return {
+      ungradedShowingAWord: statuses.filter((s) => s.grade === 'none' && s.shown).length,
+      gradedShowingAWord: statuses.filter((s) => s.grade !== 'none' && s.shown).length,
+      unreviewedStillInDom: statuses.filter((s) => s.word === 'unreviewed').length,
+      headerText: header?.textContent ?? '',
+      headerSize: header ? parseFloat(getComputedStyle(header).fontSize) : 0,
+      rowTitleSize: parseFloat(
+        getComputedStyle(
+          document.querySelector('[data-testid="requirement"] span[class*="leading"]'),
+        ).fontSize,
+      ),
+    }
+  })
+  // "unreviewed" was printed on every ungraded row; it is now for screen
+  // readers only, so the column of grey defaults is gone from the page.
+  check('ungraded rows print no status word', listState.ungradedShowingAWord === 0)
+  check('graded rows still do', listState.gradedShowingAWord > 0)
+  check(
+    'the unreviewed state is still in the accessibility tree',
+    listState.unreviewedStillInDom > 0,
+  )
+  // The header used to be smaller than the rows it organised.
+  check(
+    'the section heading outweighs the requirement text',
+    listState.headerSize > listState.rowTitleSize,
+    `heading ${listState.headerSize}px vs row ${listState.rowTitleSize}px`,
+  )
+  const progress = await page.evaluate(
+    () => [...document.querySelectorAll('span')].filter((s) => /^\d+ of \d+ graded$/.test(s.textContent.trim())).length,
+  )
+  check('every section header carries its own progress', progress >= 4, `${progress} headers`)
+
+  /* ---------------- notes follow the grade ---------------- */
+
+  section('Feedback follows the grade')
+  // Requirement 2 is graded needs-work with a note at this point.
+  await page.keyboard.press('k')
+  await page.waitForTimeout(120)
+  const noteText = 'Only 3 phrases, and 2 contain digits.'
+  check('the note is in the live output while flagged', (await page.textContent('body')).includes(`> ${noteText}`))
+  await page.keyboard.press('1')
+  await page.waitForTimeout(150)
+  const afterPass = await page.textContent('body')
+  check('switching to the passing grade drops it from the output', !afterPass.includes(`> ${noteText}`))
+  check('and the row says the feedback is being held', afterPass.includes('feedback kept, not sent'))
+  // A passing grade advances the focus, so step back before regrading —
+  // otherwise this flags the following requirement instead.
+  await page.keyboard.press('k')
+  await page.waitForTimeout(120)
+  await page.keyboard.press('3')
+  await page.waitForTimeout(150)
+  check(
+    'switching back restores it, text intact',
+    (await page.inputValue('textarea')) === noteText,
+  )
+  await page.keyboard.press('Escape')
+
   /* ---------------- shortcuts v1 broke ---------------- */
 
   section('Shortcuts the 2024 tool broke')
@@ -205,7 +279,7 @@ async function main() {
 
   /* ---------------- mark remaining, undo ---------------- */
 
-  section('Mark remaining as met, and undo')
+  section('Mark remaining as passed, and undo')
   await page.keyboard.press('m')
   await page.waitForTimeout(120)
   check(
@@ -330,16 +404,26 @@ async function main() {
   /* ---------------- reflow ---------------- */
 
   section('Reflow')
-  await page.setViewportSize({ width: 1100, height: 900 })
+  // The UI is zoomed to --ui-scale, and CSS zoom does not shrink the layout
+  // viewport a media query sees — so the breakpoints are the design's 1180
+  // and 900 scaled to 1298 and 990. Both sides of each are pinned here; a
+  // one-sided check would still pass if a breakpoint drifted far off.
+  await page.setViewportSize({ width: 1350, height: 900 })
   await page.goto(`${BASE}/review/${GAME_SHOW_ID}`)
   await page.waitForSelector('[data-testid="requirement"]')
-  check(
-    'the live output panel hides below 1180px',
-    !(await page.isVisible('text=Slack output')),
-  )
+  check('the live output panel shows above 1298px', await page.isVisible('text=Slack output'))
+  await page.setViewportSize({ width: 1250, height: 900 })
+  await page.waitForTimeout(120)
+  check('and hides below it', !(await page.isVisible('text=Slack output')))
+
+  await page.setViewportSize({ width: 1000, height: 900 })
+  await page.waitForTimeout(120)
+  check('the section rail survives above 990px', await page.isVisible('text=Sections'))
+  await page.setViewportSize({ width: 950, height: 900 })
+  await page.waitForTimeout(120)
+  check('and collapses below it', !(await page.isVisible('text=Sections')))
   await page.setViewportSize({ width: 820, height: 900 })
   await page.waitForTimeout(120)
-  check('the section rail collapses below 900px', !(await page.isVisible('text=Sections')))
   check(
     'the requirements are still there in the single column',
     (await page.$$('[data-testid="requirement"]')).length === 14,
@@ -355,6 +439,62 @@ async function main() {
     'and on the launcher too',
     (await page.$$('[data-testid="theme-toggle"]:visible')).length === 1,
   )
+
+  /* ---------------- ui scale ---------------- */
+
+  section('UI scale')
+  await page.setViewportSize({ width: 1440, height: 900 })
+  await page.goto(`${BASE}/review/${GAME_SHOW_ID}`)
+  await page.waitForSelector('[data-testid="requirement"]')
+  const sized = await page.evaluate(() => {
+    const de = document.documentElement
+    const rail = [...document.querySelectorAll('div')].find((d) =>
+      d.className.includes('w-[260px]'),
+    )
+    return {
+      zoom: getComputedStyle(de).zoom,
+      railWidth: rail ? Math.round(rail.getBoundingClientRect().width) : 0,
+    }
+  })
+  // The sizes in the stylesheet are the real sizes. Nothing is scaled at
+  // runtime, so a stray `zoom` creeping back in should fail here.
+  check(
+    'the UI is scaled in the styles, not by a runtime zoom',
+    sized.zoom === '1' || sized.zoom === 'normal',
+    `zoom = ${sized.zoom}`,
+  )
+  check('the section rail measures its scaled width', sized.railWidth === 260, `${sized.railWidth}px`)
+  // The shell is height:100% with overflow:hidden, so a scale that the
+  // viewport cannot absorb would clip the status bar or add a scrollbar.
+  const fit = await page.evaluate(() => {
+    const de = document.documentElement
+    return {
+      vScroll: de.scrollHeight > de.clientHeight + 1,
+      hScroll: de.scrollWidth > de.clientWidth + 1,
+      shellBottom: Math.round(document.body.getBoundingClientRect().bottom),
+      viewportH: window.innerHeight,
+    }
+  })
+  check('scaling adds no vertical scrollbar', !fit.vScroll)
+  check('scaling adds no horizontal scrollbar', !fit.hScroll)
+  check(
+    'the shell still ends exactly at the viewport',
+    Math.abs(fit.shellBottom - fit.viewportH) <= 1,
+    `${fit.shellBottom} vs ${fit.viewportH}`,
+  )
+  // Fixed-position overlays are the usual casualty of CSS zoom.
+  await page.keyboard.press('Control+k')
+  await page.waitForSelector('[role="dialog"]')
+  const scrim = await page.evaluate(() => {
+    const r = document.querySelector('[role="dialog"]').parentElement.getBoundingClientRect()
+    return { w: Math.round(r.width), h: Math.round(r.height), vw: window.innerWidth, vh: window.innerHeight }
+  })
+  check(
+    'the command palette scrim still covers the viewport',
+    scrim.w >= scrim.vw - 1 && scrim.h >= scrim.vh - 1,
+    `${scrim.w}x${scrim.h} vs ${scrim.vw}x${scrim.vh}`,
+  )
+  await page.keyboard.press('Escape')
 
   /* ---------------- shortcut labels off a Mac ---------------- */
 

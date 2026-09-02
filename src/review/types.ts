@@ -1,4 +1,4 @@
-export type Grade = 'met' | 'questioned' | 'needs' | 'skipped'
+export type Grade = 'met' | 'questioned' | 'needs'
 
 export type GradeEntry = {
   grade: Grade
@@ -30,7 +30,6 @@ export type Tally = {
   met: number
   questioned: number
   needs: number
-  skipped: number
   unreviewed: number
   reviewed: number
   total: number
