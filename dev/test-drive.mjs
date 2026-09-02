@@ -356,6 +356,51 @@ async function main() {
     (await page.$$('[data-testid="theme-toggle"]:visible')).length === 1,
   )
 
+  /* ---------------- shortcut labels off a Mac ---------------- */
+
+  // Every handler accepts metaKey OR ctrlKey, so the shortcuts always worked
+  // on Windows — the labels were the part telling people to press a key their
+  // keyboard does not have. A second context lies about the platform so both
+  // spellings are covered from one machine.
+  section('Shortcut labels on Windows')
+  const winContext = await browser.newContext({ viewport: { width: 1440, height: 900 } })
+  await winContext.addInitScript(() => {
+    Object.defineProperty(navigator, 'platform', { get: () => 'Win32' })
+    Object.defineProperty(navigator, 'userAgentData', { get: () => ({ platform: 'Windows' }) })
+  })
+  await winContext.route('**://*.api.sanity.io/**', async (route) => {
+    const url = new URL(route.request().url())
+    const query = url.searchParams.get('query') ?? ''
+    let result
+    if (query.includes('_type == "techdegree"')) {
+      result = INDEX
+    } else {
+      const id = JSON.parse(url.searchParams.get('$projectId') ?? '""')
+      result = PROJECTS.find((p) => p._id === id) ?? null
+    }
+    await route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ result }) })
+  })
+  const winPage = await winContext.newPage()
+
+  await winPage.goto(BASE)
+  await winPage.waitForSelector('h1')
+  check('the launcher spells the modifier Ctrl+K', (await winPage.textContent('kbd')) === 'Ctrl+K')
+
+  await winPage.goto(`${BASE}/review/${GAME_SHOW_ID}`)
+  await winPage.waitForSelector('[data-testid="requirement"]')
+  const winBody = await winPage.textContent('body')
+  check('the status bar reads Ctrl+Z / Ctrl+K / Ctrl+Enter', winBody.includes('Ctrl+Z undo'))
+  check(
+    'no Mac glyph survives anywhere on the page',
+    !/[\u2318\u2303\u21b5]/.test(winBody),
+    winBody.match(/.{0,20}[\u2318\u2303\u21b5].{0,20}/)?.[0] ?? '',
+  )
+  // The label changed; the binding must not have.
+  await winPage.keyboard.press('Control+Enter')
+  await winPage.waitForTimeout(300)
+  check('and Ctrl+Enter still works under the new label', winPage.url().endsWith('/send'))
+  await winContext.close()
+
   /* ---------------- console ---------------- */
 
   section('Console')

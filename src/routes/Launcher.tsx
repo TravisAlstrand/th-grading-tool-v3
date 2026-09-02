@@ -6,6 +6,7 @@ import { deleteDraft, loadDrafts } from '@/review/storage'
 import type { Draft } from '@/review/types'
 import { ago, plural } from '@/lib/time'
 import { cn } from '@/lib/cn'
+import { chord } from '@/lib/platform'
 import { Button, Kbd, Label, Logo } from '@/components/primitives'
 import { EmptyState, ErrorState, LoadingState } from '@/components/StateViews'
 import { ThemeToggle } from '@/components/Theme'
@@ -60,7 +61,7 @@ export function Launcher() {
         <div className="flex items-center gap-2.5 border-b border-line p-[18px] font-bold tracking-[-.01em]">
           <Logo />
           Grading Tool v3
-          <Kbd className="ml-auto">⌘K</Kbd>
+          <Kbd className="ml-auto">{chord('K')}</Kbd>
         </div>
         <Label className="px-[18px] pt-4 pb-2">Techdegrees</Label>
         <div className="flex flex-col gap-0.5 overflow-y-auto p-2">
@@ -111,7 +112,7 @@ export function Launcher() {
           </div>
           <p className="mt-[5px] mb-0 text-[13px] text-ink-3">
             {active?.projects?.length ?? 0} {plural(active?.projects?.length ?? 0, 'project')} ·
-            press <span className="font-mono">⌘K</span> to search every techdegree
+            press <span className="font-mono">{chord('K')}</span> to search every techdegree
           </p>
         </div>
 
@@ -150,45 +151,31 @@ export function Launcher() {
             />
           ) : (
             <div className="flex flex-col">
-              <div className="grid grid-cols-[44px_minmax(0,1fr)_130px_100px_120px] items-center gap-4 border-b border-line px-3 pb-2.5 font-mono text-[10px] tracking-[.12em] text-ink-4 uppercase max-rails:grid-cols-[36px_minmax(0,1fr)_90px]">
+              <div className="grid grid-cols-[44px_minmax(0,1fr)_130px_100px] items-center gap-4 border-b border-line px-3 pb-2.5 font-mono text-[10px] tracking-[.12em] text-ink-4 uppercase max-rails:grid-cols-[36px_minmax(0,1fr)_90px]">
                 <span>#</span>
                 <span>Project</span>
                 <span>Requirements</span>
                 <span className="max-rails:hidden">Exceeds</span>
-                <span className="max-rails:hidden">Status</span>
               </div>
-              {active.projects.map((project) => {
-                const draft = drafts.find((d) => d.projectId === project._id)
-                return (
-                  <button
-                    key={project._id}
-                    type="button"
-                    className="grid w-full grid-cols-[44px_minmax(0,1fr)_130px_100px_120px] items-center gap-4 border-b border-line-soft p-3 text-left text-ink-2 hover:bg-surface max-rails:grid-cols-[36px_minmax(0,1fr)_90px]"
-                    onClick={() => navigate(`/review/${project._id}`)}
-                  >
-                    <span className="font-mono text-[12px] text-ink-4">
-                      {String(project.projectNumber ?? 0).padStart(2, '0')}
-                    </span>
-                    <span className="truncate text-[14px]">{project.title}</span>
-                    <span className="font-mono text-[12.5px] text-ink-3">
-                      {project.requirementCount}
-                    </span>
-                    <span className="font-mono text-[12.5px] text-ink-3 max-rails:hidden">
-                      {project.exceedsCount}
-                    </span>
-                    <span
-                      className={cn(
-                        'text-[12px] max-rails:hidden',
-                        draft ? 'text-questioned' : 'text-ink-4',
-                      )}
-                    >
-                      {draft
-                        ? `${Object.keys(draft.grades).length} of ${project.requirementCount} reviewed`
-                        : '—'}
-                    </span>
-                  </button>
-                )
-              })}
+              {active.projects.map((project) => (
+                <button
+                  key={project._id}
+                  type="button"
+                  className="grid w-full grid-cols-[44px_minmax(0,1fr)_130px_100px] items-center gap-4 border-b border-line-soft p-3 text-left text-ink-2 hover:bg-surface max-rails:grid-cols-[36px_minmax(0,1fr)_90px]"
+                  onClick={() => navigate(`/review/${project._id}`)}
+                >
+                  <span className="font-mono text-[12px] text-ink-4">
+                    {String(project.projectNumber ?? 0).padStart(2, '0')}
+                  </span>
+                  <span className="truncate text-[14px]">{project.title}</span>
+                  <span className="font-mono text-[12.5px] text-ink-3">
+                    {project.requirementCount}
+                  </span>
+                  <span className="font-mono text-[12.5px] text-ink-3 max-rails:hidden">
+                    {project.exceedsCount}
+                  </span>
+                </button>
+              ))}
             </div>
           )}
         </div>

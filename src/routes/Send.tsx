@@ -13,6 +13,7 @@ import { useToast } from '@/components/Toast'
 import { copyText } from '@/lib/clipboard'
 import { ago, plural } from '@/lib/time'
 import { cn } from '@/lib/cn'
+import { ENTER, chord } from '@/lib/platform'
 
 /** Reading order for a student: what to fix first, what passed last. */
 const GROUP_ORDER: Grade[] = ['needs', 'questioned', 'skipped', 'met']
@@ -160,7 +161,7 @@ export function Send() {
         <ThemeToggle />
         <Button variant={tally.unreviewed ? 'held' : 'primary'} onClick={() => void copy()}>
           Copy to clipboard
-          <Kbd>⌘↵</Kbd>
+          <Kbd>{chord(ENTER)}</Kbd>
         </Button>
         <Button onClick={closeReview}>Close review</Button>
       </div>

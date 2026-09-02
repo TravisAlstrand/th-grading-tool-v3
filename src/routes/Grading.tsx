@@ -13,6 +13,7 @@ import { ThemeToggle } from '@/components/Theme'
 import { useToast } from '@/components/Toast'
 import { ago, plural } from '@/lib/time'
 import { cn } from '@/lib/cn'
+import { ENTER, chord } from '@/lib/platform'
 
 const DOT: Record<Grade | 'unreviewed', string> = {
   met: 'bg-met',
@@ -170,7 +171,7 @@ export function Grading() {
           onClick={() => navigate(`/review/${project._id}/send`)}
         >
           Review &amp; send
-          <Kbd>⌘↵</Kbd>
+          <Kbd>{chord(ENTER)}</Kbd>
         </Button>
       </div>
 
@@ -282,8 +283,8 @@ export function Grading() {
         {tally.skipped > 0 && <span>{tally.skipped} not attempted</span>}
         <span data-testid="unreviewed-count">{tally.unreviewed} unreviewed</span>
         <span className="ml-auto">
-          J K move · 1 2 3 0 grade · same key clears · E note · M mark rest · ⌘Z undo · ⌘K search ·
-          ⌘↵ review
+          J K move · 1 2 3 0 grade · same key clears · E note · M mark rest · {chord('Z')} undo ·{' '}
+          {chord('K')} search · {chord(ENTER)} review
         </span>
       </div>
     </>

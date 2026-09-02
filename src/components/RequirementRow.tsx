@@ -3,6 +3,7 @@ import type { Requirement } from '@/sanity/types'
 import { GRADES, GRADE_ORDER, takesNote } from '@/review/grades'
 import type { Grade, GradeEntry } from '@/review/types'
 import { cn } from '@/lib/cn'
+import { ENTER, chord } from '@/lib/platform'
 
 const STRIPE: Record<Grade, string> = {
   met: 'bg-met',
@@ -135,7 +136,7 @@ export const RequirementRow = forwardRef<HTMLDivElement, RequirementRowProps>(
                 onChange={(e) => onNoteChange(e.target.value)}
               />
               <div className="flex flex-wrap items-center gap-3 border-t border-line bg-editor-foot px-[15px] py-2 text-[12px] text-ink-4">
-                <span className="font-mono text-[10px]">⌘↵ save &amp; next</span>
+                <span className="font-mono text-[10px]">{chord(ENTER)} save &amp; next</span>
                 <span className="ml-auto font-mono text-[10px]">Esc leaves the field</span>
               </div>
             </div>
