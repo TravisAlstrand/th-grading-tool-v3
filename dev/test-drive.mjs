@@ -125,13 +125,26 @@ async function main() {
 
   section('Launcher')
   await page.goto(BASE)
-  await page.waitForSelector('h1')
+  await page.waitForSelector('[data-testid="launcher"]')
   check(
     'techdegree rail lists the techdegrees from the index query',
     (await page.textContent('body')).includes('Full Stack JavaScript'),
   )
   check(
-    'project table shows real requirement counts',
+    'nothing is selected on arrival, so the right side is empty',
+    !(await page.$('h1')) && !(await page.textContent('body')).includes('Game Show App'),
+  )
+  check(
+    'and the first techdegree holds the keyboard',
+    await page.evaluate(() => {
+      const first = document.querySelector('[data-testid="techdegree"]')
+      return document.activeElement === first
+    }),
+  )
+  await page.click('[data-testid="techdegree"]:visible')
+  await page.waitForSelector('h1')
+  check(
+    'choosing one reveals its projects',
     (await page.textContent('body')).includes('Game Show App'),
   )
 
@@ -355,8 +368,22 @@ async function main() {
   )
 
   await page.goto(BASE)
-  await page.waitForSelector('h1')
+  await page.waitForSelector('[data-testid="launcher"]')
   check('the launcher offers the draft to resume', (await page.textContent('body')).includes('Resume'))
+  // Drafts are not owned by the selected techdegree, so they show with
+  // nothing picked and they sit above the techdegree heading, not under it.
+  check('unfinished reviews show with no techdegree selected', await page.isVisible('[data-testid="resume-drafts"]'))
+  check('and nothing is auto-selected on the way back', !(await page.$('h1')))
+  await page.click('[data-testid="techdegree"]:visible')
+  await page.waitForSelector('h1')
+  check(
+    'they stay above the techdegree heading once one is chosen',
+    await page.evaluate(() => {
+      const drafts = document.querySelector('[data-testid="resume-drafts"]')
+      const heading = document.querySelector('h1')
+      return drafts.getBoundingClientRect().top < heading.getBoundingClientRect().top
+    }),
+  )
   await page.click('text=Continue')
   await page.waitForSelector('[data-testid="requirement"]')
 
@@ -452,7 +479,7 @@ async function main() {
   await page.waitForSelector('[data-testid="requirement"]')
   check('the toggle is on the grading screen', await page.isVisible('[data-testid="theme-toggle"]:visible'))
   await page.click('text=← Projects')
-  await page.waitForSelector('h1')
+  await page.waitForSelector('[data-testid="launcher"]')
   check('the toggle is on the launcher', await page.isVisible('[data-testid="theme-toggle"]:visible'))
   check(
     'exactly one toggle is visible at a time',
@@ -501,7 +528,7 @@ async function main() {
     (await page.$$('[data-testid="theme-toggle"]:visible')).length === 1,
   )
   await page.goto(BASE)
-  await page.waitForSelector('h1')
+  await page.waitForSelector('[data-testid="launcher"]')
   check(
     'and on the launcher too',
     (await page.$$('[data-testid="theme-toggle"]:visible')).length === 1,
@@ -590,7 +617,7 @@ async function main() {
   const winPage = await winContext.newPage()
 
   await winPage.goto(BASE)
-  await winPage.waitForSelector('h1')
+  await winPage.waitForSelector('[data-testid="launcher"]')
   check('the launcher spells the modifier Ctrl+K', (await winPage.textContent('kbd')) === 'Ctrl+K')
 
   await winPage.goto(`${BASE}/review/${GAME_SHOW_ID}`)
@@ -621,7 +648,7 @@ async function main() {
   if (process.env.SHOTS) {
     await page.setViewportSize({ width: 1440, height: 900 })
     await page.goto(BASE)
-    await page.waitForSelector('h1')
+    await page.waitForSelector('[data-testid="launcher"]')
     await page.screenshot({ path: `${process.env.SHOTS}/launcher.png` })
     await page.goto(`${BASE}/review/${GAME_SHOW_ID}`)
     await page.waitForSelector('[data-testid="requirement"]')
