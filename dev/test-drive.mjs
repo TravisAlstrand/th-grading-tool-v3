@@ -131,6 +131,10 @@ async function main() {
     (await page.textContent('body')).includes('Full Stack JavaScript'),
   )
   check(
+    'the status bar lists the controls that work here',
+    (await page.textContent('body')).includes('J K move'),
+  )
+  check(
     'nothing is selected on arrival, so the right side is empty',
     !(await page.$('h1')) && !(await page.textContent('body')).includes('Game Show App'),
   )
@@ -141,18 +145,41 @@ async function main() {
       return document.activeElement === first
     }),
   )
-  await page.click('[data-testid="techdegree"]:visible')
+  const focusedText = () =>
+    page.evaluate(() => (document.activeElement?.textContent ?? '').replace(/\s+/g, ' ').trim())
+
+  // J/K on the launcher, matching the grading screen. Focus is the state, so
+  // Enter needs no special handling — it is just a button press.
+  await page.keyboard.press('j')
+  check('J moves down the techdegree list', (await focusedText()).includes('Full Stack JavaScript'))
+  await page.keyboard.press('k')
+  check('K moves back up', (await focusedText()).includes('Front End Web Development'))
+  await page.keyboard.press('k')
+  check('and stops at the top rather than wrapping', (await focusedText()).includes('Front End Web Development'))
+  await page.keyboard.press('Tab')
+  check('Tab still walks the list too', (await focusedText()).includes('Full Stack JavaScript'))
+  await page.keyboard.press('Shift+Tab')
+
+  await page.keyboard.press('Enter')
   await page.waitForSelector('h1')
   check(
     'choosing one reveals its projects',
     (await page.textContent('body')).includes('Game Show App'),
   )
+  check('and drops the focus on the first project', (await focusedText()).includes('An Interactive Photo Gallery'))
+  await page.keyboard.press('j')
+  check('J moves down the projects', (await focusedText()).includes('Game Show App'))
+  await page.keyboard.press('Escape')
+  check('Esc returns to the techdegree that opened them', (await focusedText()).includes('Front End Web Development'))
 
   /* ---------------- command palette ---------------- */
 
   section('⌘K searches every project across every techdegree')
   await page.keyboard.press('Control+k')
   await page.waitForSelector('[role="dialog"]')
+  await page.keyboard.type('jk')
+  check('j and k type into the palette rather than moving focus', (await page.inputValue('[role="dialog"] input')) === 'jk')
+  await page.fill('[role="dialog"] input', '')
   await page.keyboard.type('game show')
   const paletteResults = await page.$$eval('[role="dialog"] button', (b) =>
     b.map((x) => x.textContent),
@@ -618,7 +645,10 @@ async function main() {
 
   await winPage.goto(BASE)
   await winPage.waitForSelector('[data-testid="launcher"]')
-  check('the launcher spells the modifier Ctrl+K', (await winPage.textContent('kbd')) === 'Ctrl+K')
+  check(
+    'the launcher status bar spells the modifier Ctrl+K',
+    (await winPage.textContent('body')).includes('Ctrl+K search'),
+  )
 
   await winPage.goto(`${BASE}/review/${GAME_SHOW_ID}`)
   await winPage.waitForSelector('[data-testid="requirement"]')
