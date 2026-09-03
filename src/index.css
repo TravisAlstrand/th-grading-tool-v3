@@ -14,7 +14,14 @@
   --color-surface: #16191e;
   --color-surface-2: #1b2028;
   --color-raised: #171c22;
-  --color-sechead: #101317;
+  /* The section bar was one step off the page grey, so it read as another
+     row rather than a break between groups. It is now a colour rather than
+     a shade, which carries at the small value differences this palette works
+     in. The hue is the navigation blue below, for the reason given there:
+     the grades own green, amber and red, so a green-tinted bar on an
+     ungraded section reads as a verdict it is not making. */
+  --color-sechead: #17212b;
+  --color-sechead-edge: #283646;
   --color-editor: #12161a;
   --color-editor-foot: #14181c;
   --color-resume: #141a18;
@@ -113,7 +120,8 @@
   --color-surface: #f7f9fb;
   --color-surface-2: #e7ecf2;
   --color-raised: #ffffff;
-  --color-sechead: #eef1f5;
+  --color-sechead: #dee8f2;
+  --color-sechead-edge: #b6cbe0;
   --color-editor: #ffffff;
   --color-editor-foot: #f2f5f8;
   --color-resume: #edfaf4;

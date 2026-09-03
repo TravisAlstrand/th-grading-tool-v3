@@ -131,8 +131,9 @@ async function main() {
     (await page.textContent('body')).includes('Full Stack JavaScript'),
   )
   check(
-    'the status bar lists the controls that work here',
-    (await page.textContent('body')).includes('J K move'),
+    'the status bar offers the shortcut sheet instead of printing it',
+    (await page.textContent('body')).includes('shortcuts') &&
+      !(await page.textContent('body')).includes('J K move'),
   )
   check(
     'nothing is selected on arrival, so the right side is empty',
@@ -282,6 +283,46 @@ async function main() {
     () => [...document.querySelectorAll('span')].filter((s) => /^\d+ of \d+ graded$/.test(s.textContent.trim())).length,
   )
   check('every section header carries its own progress', progress >= 4, `${progress} headers`)
+
+  // The band used to be one step off the page grey, which read as another
+  // row. Both halves of the fix are checked: it is a hue, not a shade, and
+  // there is real space above it.
+  const grouping = await page.evaluate(() => {
+    const bands = [...document.querySelectorAll('h2')].map((h) => h.parentElement)
+    const column = bands[0].parentElement.parentElement
+    const paint = (el) => {
+      for (let n = el; n; n = n.parentElement) {
+        const c = getComputedStyle(n).backgroundColor
+        if (c !== 'rgba(0, 0, 0, 0)' && c !== 'transparent') return c
+      }
+      return getComputedStyle(document.body).backgroundColor
+    }
+    const rgb = (c) => c.match(/\d+/g).map(Number)
+    const secondTop = bands[1].getBoundingClientRect().top
+    const above = [...document.querySelectorAll('[data-testid="requirement"]')].filter(
+      (r) => r.getBoundingClientRect().bottom <= secondTop + 1,
+    )
+    return {
+      band: rgb(paint(bands[0])),
+      column: rgb(paint(column)),
+      gap: Math.round(secondTop - above[above.length - 1].getBoundingClientRect().bottom),
+    }
+  })
+  check(
+    'the section band is a hue, not another grey',
+    grouping.band[2] - grouping.band[0] >= 12,
+    `band rgb(${grouping.band})`,
+  )
+  check(
+    'and is distinct from the column behind the rows',
+    grouping.band.some((v, i) => Math.abs(v - grouping.column[i]) >= 5),
+    `band rgb(${grouping.band}) vs column rgb(${grouping.column})`,
+  )
+  check(
+    'sections are separated by a gap, not just a rule',
+    grouping.gap >= 12,
+    `${grouping.gap}px between the last row and the next band`,
+  )
 
   /* ---------------- tab indents inside a fence ---------------- */
 
@@ -652,6 +693,130 @@ async function main() {
     (await page.$$('[data-testid="theme-toggle"]:visible')).length === 1,
   )
 
+  /* ---------------- the shortcut sheet ---------------- */
+
+  // The bar printed all nine grading shortcuts on every screen and wrapped
+  // onto a second line below 1298px. They live behind `?` now, so the keys
+  // that open it — and the keys it must suspend while open — are covered.
+  section('? opens the shortcut sheet')
+  await page.setViewportSize({ width: 1440, height: 900 })
+  await page.goto(`${BASE}/review/${GAME_SHOW_ID}`)
+  await page.waitForSelector('[data-testid="requirement"]')
+  check('the grading bar no longer prints the cheat sheet', !(await page.textContent('body')).includes('mark exceeds'))
+
+  await page.keyboard.press('?')
+  await page.waitForSelector('[data-testid="shortcuts"]')
+  check('? opens it', await page.isVisible('[data-testid="shortcuts"]'))
+  const sheet = await page.textContent('[data-testid="shortcuts"]')
+  check(
+    'it carries the grading keys that left the bar',
+    ['Move between requirements', 'Mark every remaining', 'exceeds requirement', 'Undo the last change'].every(
+      (t) => sheet.includes(t),
+    ),
+  )
+
+  // The sheet is an overlay like the palette, so single-key grading
+  // shortcuts must not fire underneath it.
+  const beforeSheet = await grades()
+  await page.keyboard.press('1')
+  await page.waitForTimeout(120)
+  check(
+    'grading keys do not fire underneath it',
+    JSON.stringify(await grades()) === JSON.stringify(beforeSheet),
+  )
+
+  await page.keyboard.press('Escape')
+  await page.waitForTimeout(120)
+  check('Esc closes it', !(await page.isVisible('[data-testid="shortcuts"]')))
+  check('and Esc did not also fall through to leaving the review', page.url().includes(GAME_SHOW_ID))
+  await page.keyboard.press('1')
+  await page.waitForTimeout(120)
+  check('grading keys work again once it is closed', JSON.stringify(await grades()) !== JSON.stringify(beforeSheet))
+
+  // Clicking is the other way in — the sheet should not need the shortcut it
+  // documents in order to be found.
+  await page.click('[data-testid="shortcuts-hint"]')
+  await page.waitForSelector('[data-testid="shortcuts"]')
+  check('the status-bar hint opens it too', await page.isVisible('[data-testid="shortcuts"]'))
+  await page.keyboard.press('?')
+  await page.waitForTimeout(120)
+  check('? closes it again', !(await page.isVisible('[data-testid="shortcuts"]')))
+
+  // `?` is a plain character, so it has to stay out of the way of typing.
+  await page.keyboard.press('2')
+  await page.waitForTimeout(150)
+  await page.keyboard.type('why? because')
+  await page.waitForTimeout(120)
+  check('? types into a note rather than opening the sheet', !(await page.isVisible('[data-testid="shortcuts"]')))
+  check(
+    'and the question mark reached the note',
+    (await page.inputValue('textarea')).includes('why? because'),
+  )
+  await page.keyboard.press('Escape')
+
+  /* ---------------- the launcher below the rail breakpoint ---------------- */
+
+  // The picker is rendered twice and CSS hides one copy. A ref to the rail's
+  // first button was still a ref when that button was display:none, so the
+  // narrow launcher opened with focus on <body> and J/K was dead.
+  section('Launcher with the rail collapsed')
+  await page.setViewportSize({ width: 960, height: 900 })
+  await page.goto(BASE)
+  await page.waitForSelector('[data-testid="launcher"]')
+  await page.waitForTimeout(150)
+
+  const onLoad = () =>
+    page.evaluate(() => {
+      const a = document.activeElement
+      return a instanceof HTMLElement && a.dataset.navItem !== undefined && a.offsetParent !== null
+        ? a.textContent.trim()
+        : `<${(a?.tagName ?? 'none').toLowerCase()}>`
+    })
+  check(
+    'the first techdegree takes focus on load',
+    (await onLoad()).startsWith('Front End Web Development'),
+    await onLoad(),
+  )
+
+  // The pills were sized by their own text, so the row read as a staircase.
+  const picker = await page.evaluate(() => {
+    const items = [...document.querySelectorAll('[data-testid="techdegree"]')].filter(
+      (el) => el.offsetParent !== null,
+    )
+    const widths = items.map((el) => Math.round(el.getBoundingClientRect().width))
+    return { count: items.length, widths, spread: Math.max(...widths) - Math.min(...widths) }
+  })
+  check(
+    'every techdegree in the narrow picker is the same width',
+    picker.count >= 3 && picker.spread <= 1,
+    `widths ${picker.widths.join(', ')}`,
+  )
+
+  await page.keyboard.press('j')
+  await page.waitForTimeout(80)
+  check('J moves to the next one', (await onLoad()).startsWith('Full Stack JavaScript'))
+  await page.keyboard.press('k')
+  await page.waitForTimeout(80)
+  check('and K comes back', (await onLoad()).startsWith('Front End Web Development'))
+
+  await page.keyboard.press('Enter')
+  await page.waitForTimeout(200)
+  check(
+    'Enter opens it and hands focus to the first project',
+    (await onLoad()).startsWith('05An Interactive Photo Gallery'),
+    await onLoad(),
+  )
+
+  // Esc looked for the rail copy by name, so it did nothing at this width.
+  await page.keyboard.press('Escape')
+  await page.waitForTimeout(80)
+  check(
+    'Esc comes back to the techdegree that opened them',
+    (await onLoad()).startsWith('Front End Web Development'),
+    await onLoad(),
+  )
+  await page.setViewportSize({ width: 1440, height: 900 })
+
   /* ---------------- ui scale ---------------- */
 
   section('UI scale')
@@ -749,21 +914,28 @@ async function main() {
 
   await winPage.goto(BASE)
   await winPage.waitForSelector('[data-testid="launcher"]')
+  await winPage.keyboard.press('?')
+  await winPage.waitForSelector('[data-testid="shortcuts"]')
   check(
-    'the launcher status bar spells the modifier Ctrl+K',
-    (await winPage.textContent('body')).includes('Ctrl+K search'),
+    'the shortcut sheet spells the modifier Ctrl+K',
+    (await winPage.textContent('[data-testid="shortcuts"]')).includes('Ctrl+K'),
   )
+  await winPage.keyboard.press('Escape')
 
   await winPage.goto(`${BASE}/review/${GAME_SHOW_ID}`)
   await winPage.waitForSelector('[data-testid="requirement"]')
+  await winPage.keyboard.press('?')
+  await winPage.waitForSelector('[data-testid="shortcuts"]')
   const winBody = await winPage.textContent('body')
-  check('the status bar reads Ctrl+Z / Ctrl+K / Ctrl+Enter', winBody.includes('Ctrl+Z undo'))
+  check('and reads Ctrl+Z / Ctrl+Enter for the rest', winBody.includes('Ctrl+Z') && winBody.includes('Ctrl+Enter'))
   check(
     'no Mac glyph survives anywhere on the page',
     !/[\u2318\u2303\u21b5]/.test(winBody),
     winBody.match(/.{0,20}[\u2318\u2303\u21b5].{0,20}/)?.[0] ?? '',
   )
   // The label changed; the binding must not have.
+  await winPage.keyboard.press('Escape')
+  await winPage.waitForTimeout(120)
   await winPage.keyboard.press('Control+Enter')
   await winPage.waitForTimeout(300)
   check('and Ctrl+Enter still works under the new label', winPage.url().endsWith('/send'))

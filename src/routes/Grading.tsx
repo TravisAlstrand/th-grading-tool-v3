@@ -5,10 +5,10 @@ import { sectionStatus } from '@/review/selectors'
 import { GRADES, takesNote } from '@/review/grades'
 import { useGradingKeys } from '@/review/useGradingKeys'
 import type { Grade } from '@/review/types'
-import { usePaletteOpen } from '@/components/CommandPalette'
+import { useOpenShortcuts, useOverlayOpen } from '@/components/Overlays'
 import { OutputPanel } from '@/components/OutputPanel'
 import { RequirementRow } from '@/components/RequirementRow'
-import { Button, Kbd, Label } from '@/components/primitives'
+import { Button, Kbd, Label, ShortcutsHint } from '@/components/primitives'
 import { ThemeToggle } from '@/components/Theme'
 import { useToast } from '@/components/Toast'
 import { plural } from '@/lib/time'
@@ -27,6 +27,12 @@ const DOT: Record<Grade | 'unreviewed', string> = {
  * requirement text — so it read as quieter than the rows it was organising.
  * It is now the largest thing in the column, and carries its own progress so
  * you can see where you are in a section without counting rows.
+ *
+ * It sits on `bg-sechead`, which is tinted toward the accent rather than
+ * being another step on the grey ramp: at the value differences this palette
+ * works in, a shade alone was indistinguishable from a row. The gap above it
+ * comes from the section wrapper, so a header that has stuck to the top of
+ * the column still sits flush against it.
  */
 function SectionHeader({
   index,
@@ -41,7 +47,7 @@ function SectionHeader({
 }) {
   const done = total > 0 && graded === total
   return (
-    <div className="sticky top-0 z-2 flex items-center gap-3 border-b border-line bg-sechead px-6 pt-[22px] pb-[14px] max-rails:px-4 max-rails:pt-4 max-rails:pb-3">
+    <div className="sticky top-0 z-2 flex items-center gap-3 border-y border-sechead-edge bg-sechead px-6 py-[13px] max-rails:px-4 max-rails:py-2.5">
       <span className="font-mono text-[16px] font-semibold text-accent">
         {String(index + 1).padStart(2, '0')}
       </span>
@@ -65,7 +71,8 @@ export function Grading() {
   const { review, tally, dispatch, saveFailed, canUndo } = session
   const navigate = useNavigate()
   const flash = useToast()
-  const paletteOpen = usePaletteOpen()
+  const overlayOpen = useOverlayOpen()
+  const openShortcuts = useOpenShortcuts()
 
   const editorRef = useRef<HTMLTextAreaElement>(null)
   const focusedRowRef = useRef<HTMLDivElement>(null)
@@ -100,7 +107,7 @@ export function Grading() {
     [dispatch, focusEditor, review.focusReqId, review.grades],
   )
 
-  useGradingKeys(!paletteOpen, {
+  useGradingKeys(!overlayOpen, {
     onMove: (delta) => dispatch({ type: 'move', delta }),
     onGrade,
     onAdvance: () => dispatch({ type: 'advance' }),
@@ -240,7 +247,9 @@ export function Grading() {
 
         <div className="min-w-0 flex-1 overflow-y-auto">
           {project.gradingSections?.map((section, sectionIndex) => (
-            <div key={section._id}>
+            // The gap is what makes the bars read as breaks; without it the
+            // tint alone still ran as one continuous ladder of rows.
+            <div key={section._id} className={cn(sectionIndex > 0 && 'pt-[18px]')}>
               <SectionHeader
                 index={sectionIndex}
                 title={section.title}
@@ -290,11 +299,7 @@ export function Grading() {
             {tally.exceedsUngraded} exceeds not graded
           </span>
         )}
-        <span className="ml-auto">
-          J K move · 1 2 3 grade · same key clears · E note · M mark meets · X mark exceeds ·{' '}
-          {chord('Z')} undo ·{' '}
-          {chord('K')} search · {chord(ENTER)} review
-        </span>
+        <ShortcutsHint className="ml-auto" onClick={openShortcuts} />
       </div>
     </>
   )

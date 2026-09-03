@@ -1,6 +1,6 @@
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom'
-import { PaletteProvider } from '@/components/CommandPalette'
+import { OverlayProvider } from '@/components/Overlays'
 import { ThemeProvider } from '@/components/Theme'
 import { ToastProvider } from '@/components/Toast'
 import { Launcher } from '@/routes/Launcher'
@@ -26,7 +26,7 @@ export function App() {
       <ThemeProvider>
         <BrowserRouter>
           <ToastProvider>
-            <PaletteProvider>
+            <OverlayProvider>
               <Routes>
                 <Route path="/" element={<Launcher />} />
                 <Route path="/review/:projectId" element={<ReviewLayout />}>
@@ -35,7 +35,7 @@ export function App() {
                 </Route>
                 <Route path="*" element={<Navigate to="/" replace />} />
               </Routes>
-            </PaletteProvider>
+            </OverlayProvider>
           </ToastProvider>
         </BrowserRouter>
       </ThemeProvider>

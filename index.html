@@ -3,7 +3,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Grading Tool</title>
+    <title>Grading Tool v3</title>
     <link rel="icon" type="image/png" href="/favicon.png" />
     <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
@@ -16,20 +16,20 @@
       /* Runs before first paint so the page never flashes the wrong theme.
          Deliberately duplicates the key and the fallback in src/lib/theme.ts
          — nothing bundled can run this early. Keep the two in step. */
-      ;(function () {
+      (function () {
         try {
-          var pref = localStorage.getItem('grading-tool:theme')
+          var pref = localStorage.getItem("grading-tool:theme");
           var theme =
-            pref === 'light' || pref === 'dark'
+            pref === "light" || pref === "dark"
               ? pref
-              : window.matchMedia('(prefers-color-scheme: light)').matches
-                ? 'light'
-                : 'dark'
-          document.documentElement.setAttribute('data-theme', theme)
+              : window.matchMedia("(prefers-color-scheme: light)").matches
+                ? "light"
+                : "dark";
+          document.documentElement.setAttribute("data-theme", theme);
         } catch (e) {
-          document.documentElement.setAttribute('data-theme', 'dark')
+          document.documentElement.setAttribute("data-theme", "dark");
         }
-      })()
+      })();
     </script>
   </head>
   <body>

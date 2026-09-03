@@ -5,7 +5,7 @@ import { buildReview } from '@/review/buildReview'
 import { GRADES, GRADE_ORDER } from '@/review/grades'
 import { isFenceDelimiter, splitFences } from '@/review/templates'
 import type { Grade } from '@/review/types'
-import { usePaletteOpen } from '@/components/CommandPalette'
+import { useOverlayOpen } from '@/components/Overlays'
 import { isTypingTarget } from '@/review/useGradingKeys'
 import { Button, ConfirmButton, Kbd, Label } from '@/components/primitives'
 import { ThemeToggle } from '@/components/Theme'
@@ -85,7 +85,7 @@ export function Send() {
   const { review, tally, dispatch, savedAt, discard } = session
   const navigate = useNavigate()
   const flash = useToast()
-  const paletteOpen = usePaletteOpen()
+  const overlayOpen = useOverlayOpen()
 
   const [expanded, setExpanded] = useState<Record<string, boolean>>({})
 
@@ -109,7 +109,7 @@ export function Send() {
 
   useEffect(() => {
     const onKeyDown = (e: KeyboardEvent) => {
-      if (paletteOpen) return
+      if (overlayOpen) return
       if ((e.metaKey || e.ctrlKey) && e.key === 'Enter') {
         e.preventDefault()
         void copy()

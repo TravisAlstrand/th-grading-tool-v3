@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
 import { useTechdegreeIndex } from '@/sanity/hooks'
 import type { ProjectSummary, TechdegreeSummary } from '@/sanity/types'
@@ -6,13 +6,25 @@ import { deleteDraft, loadDrafts } from '@/review/storage'
 import type { Draft } from '@/review/types'
 import { ago, plural } from '@/lib/time'
 import { cn } from '@/lib/cn'
-import { ENTER, chord } from '@/lib/platform'
-import { Button, ConfirmButton, Label, Logo } from '@/components/primitives'
+import { Button, ConfirmButton, Label, Logo, ShortcutsHint } from '@/components/primitives'
 import { EmptyState, ErrorState, LoadingState } from '@/components/StateViews'
 import { ThemeToggle } from '@/components/Theme'
 import { useToast } from '@/components/Toast'
-import { usePaletteOpen } from '@/components/CommandPalette'
+import { useOpenShortcuts, useOverlayOpen } from '@/components/Overlays'
 import { isTypingTarget } from '@/review/useGradingKeys'
+
+/**
+ * The techdegree picker is rendered twice — once in the rail, once in the
+ * narrow header — and CSS hides whichever one does not fit. Anything that
+ * moves focus has to ask which copy is on screen: a ref to the rail's first
+ * button was still a ref below 990px, where that button is `display: none`,
+ * so the launcher opened with focus on <body> and J/K did nothing until you
+ * clicked something.
+ */
+const navItems = (list: string) =>
+  [
+    ...document.querySelectorAll<HTMLElement>(`[data-nav-list="${list}"] [data-nav-item]`),
+  ].filter((el) => el.offsetParent !== null)
 
 export function Launcher() {
   const { data, isPending, isError, error, refetch } = useTechdegreeIndex()
@@ -27,17 +39,15 @@ export function Launcher() {
     () => techdegrees.find((t) => t._id === activeId) ?? null,
     [techdegrees, activeId],
   )
-  const firstTechdegreeRef = useRef<HTMLButtonElement>(null)
-  const firstProjectRef = useRef<HTMLButtonElement>(null)
-  const paletteOpen = usePaletteOpen()
+  const overlayOpen = useOverlayOpen()
+  const openShortcuts = useOpenShortcuts()
 
   // Put the keyboard where the next choice is: the techdegree list when
   // nothing is picked, the project list once something is. Depends on the
   // data too — the first render is the loading state, so a mount-only effect
   // would find no button to focus.
   useEffect(() => {
-    if (activeId) firstProjectRef.current?.focus()
-    else firstTechdegreeRef.current?.focus()
+    navItems(activeId ? 'projects' : 'techdegrees')[0]?.focus()
   }, [activeId, techdegrees.length])
 
   /**
@@ -47,7 +57,7 @@ export function Launcher() {
    */
   useEffect(() => {
     const onKeyDown = (e: KeyboardEvent) => {
-      if (paletteOpen || e.metaKey || e.ctrlKey || e.altKey) return
+      if (overlayOpen || e.metaKey || e.ctrlKey || e.altKey) return
       if (isTypingTarget(e.target)) return
 
       const focused = document.activeElement
@@ -55,13 +65,12 @@ export function Launcher() {
 
       // Esc comes back out of the projects to the techdegree that opened them.
       if (e.key === 'Escape') {
-        const rail = document.querySelector<HTMLElement>('[data-nav-list="techdegrees"]')
-        const current =
-          rail?.querySelector<HTMLElement>('[aria-current="true"]') ??
-          rail?.querySelector<HTMLElement>('[data-nav-item]')
-        if (!current || rail?.contains(focused)) return
+        if (focused.closest('[data-nav-list="techdegrees"]')) return
+        const items = navItems('techdegrees')
+        const target = items.find((el) => el.getAttribute('aria-current') === 'true') ?? items[0]
+        if (!target) return
         e.preventDefault()
-        current.focus()
+        target.focus()
         return
       }
 
@@ -81,7 +90,7 @@ export function Launcher() {
     }
     document.addEventListener('keydown', onKeyDown)
     return () => document.removeEventListener('keydown', onKeyDown)
-  }, [paletteOpen])
+  }, [overlayOpen])
 
   const byProjectId = useMemo(() => {
     const map = new Map<string, { project: ProjectSummary; td: TechdegreeSummary }>()
@@ -121,11 +130,10 @@ export function Launcher() {
           </div>
           <Label className="px-[20px] pt-4 pb-2">Techdegrees</Label>
           <div data-nav-list="techdegrees" className="flex flex-col gap-0.5 overflow-y-auto p-2">
-            {techdegrees.map((td, i) => (
+            {techdegrees.map((td) => (
               <button
                 key={td._id}
                 type="button"
-                ref={i === 0 ? firstTechdegreeRef : undefined}
                 data-testid="techdegree"
                 data-nav-item=""
                 aria-current={td._id === active?._id}
@@ -166,7 +174,16 @@ export function Launcher() {
               Grading Tool v3
               <ThemeToggle className="ml-auto" />
             </div>
-            <div data-nav-list="techdegrees-narrow" className="flex flex-wrap gap-1.5">
+            {/* Pills sized by their own text wrapped into a ragged block, and
+                dropped the project count the rail shows. Equal tracks instead:
+                auto-fit gives every cell the same width and stretches the last
+                row to fill, so the row stays a block rather than a staircase.
+                240px is the width the longest techdegree name reads at without
+                truncating. */}
+            <div
+              data-nav-list="techdegrees"
+              className="grid grid-cols-[repeat(auto-fit,minmax(240px,1fr))] gap-1.5"
+            >
               {techdegrees.map((td) => (
                 <button
                   key={td._id}
@@ -175,7 +192,7 @@ export function Launcher() {
                   data-nav-item=""
                   aria-current={td._id === active?._id}
                   className={cn(
-                    'flex items-center gap-2 rounded-[7.5px] border px-[12px] py-1.5 text-[14px]',
+                    'flex w-full items-center gap-[12px] rounded-[7.5px] border px-[12px] py-2 text-left text-[14px]',
                     td._id === active?._id
                       ? 'border-edge-2 bg-surface-2 font-semibold text-ink'
                       : 'border-edge text-ink-2 hover:bg-surface',
@@ -183,10 +200,13 @@ export function Launcher() {
                   onClick={() => setSearchParams({ td: td._id })}
                 >
                   <span
-                    className="h-[14px] w-[3.5px] shrink-0 rounded-sm"
+                    className="h-[16px] w-[3.5px] shrink-0 rounded-sm"
                     style={{ background: td.color ?? '#6FD3B4' }}
                   />
-                  {td.name}
+                  <span className="truncate">{td.name}</span>
+                  <span className="ml-auto font-mono text-[12px] text-ink-4">
+                    {td.projects?.length ?? 0}
+                  </span>
                 </button>
               ))}
             </div>
@@ -262,11 +282,10 @@ export function Launcher() {
                   <span>Requirements</span>
                   <span className="max-rails:hidden">Exceeds</span>
                 </div>
-                {active.projects.map((project, i) => (
+                {active.projects.map((project) => (
                   <button
                     key={project._id}
                     type="button"
-                    ref={i === 0 ? firstProjectRef : undefined}
                     data-nav-item=""
                     data-testid="project"
                     className="grid w-full grid-cols-[48px_minmax(0,1fr)_143px_110px] items-center gap-4 border-b border-line-soft p-3 text-left text-ink-2 hover:bg-surface max-rails:grid-cols-[39.5px_minmax(0,1fr)_99px]"
@@ -293,9 +312,7 @@ export function Launcher() {
       {/* Same status bar as the grading screen, so the controls live in the
           same place on both. */}
       <div className="flex shrink-0 items-center gap-5 border-t border-line bg-panel px-6 py-[10px] font-mono text-[12px] text-ink-4 max-rails:gap-3 max-rails:px-4 max-rails:text-[11px]">
-        <span className="ml-auto">
-          J K move · {ENTER} open · Esc back · {chord('K')} search
-        </span>
+        <ShortcutsHint className="ml-auto" onClick={openShortcuts} />
       </div>
     </>
   )

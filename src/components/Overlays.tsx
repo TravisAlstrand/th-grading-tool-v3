@@ -1,25 +1,61 @@
 import { createContext, useContext, useEffect, useMemo, useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useTechdegreeIndex } from '@/sanity/hooks'
+import { ShortcutSheet } from './Shortcuts'
+import { isTypingTarget } from '@/review/useGradingKeys'
 import { cn } from '@/lib/cn'
 
-type PaletteState = { open: boolean; setOpen: (open: boolean) => void }
+/**
+ * The two full-screen overlays share one slot rather than a boolean each.
+ * Only one can be open, so ⌘K from the shortcut sheet swaps rather than
+ * stacking — and every screen has a single thing to ask before acting on a
+ * keystroke, which it would otherwise be easy to add an overlay and forget.
+ */
+type Overlay = 'palette' | 'shortcuts'
+type OverlayState = { open: Overlay | null; setOpen: (open: Overlay | null) => void }
 
-const PaletteContext = createContext<PaletteState>({ open: false, setOpen: () => {} })
+const OverlayContext = createContext<OverlayState>({ open: null, setOpen: () => {} })
 
-/** Screens ask this before acting on a keystroke, so the palette always wins. */
-export function usePaletteOpen(): boolean {
-  return useContext(PaletteContext).open
+/** Screens ask this before acting on a keystroke, so an overlay always wins. */
+export function useOverlayOpen(): boolean {
+  return useContext(OverlayContext).open !== null
 }
 
-export function PaletteProvider({ children }: { children: React.ReactNode }) {
-  const [open, setOpen] = useState(false)
+/** For the status bars, which offer the sheet to the mouse as well as to `?`. */
+export function useOpenShortcuts(): () => void {
+  const { setOpen } = useContext(OverlayContext)
+  return () => setOpen('shortcuts')
+}
+
+export function OverlayProvider({ children }: { children: React.ReactNode }) {
+  const [open, setOpen] = useState<Overlay | null>(null)
   const value = useMemo(() => ({ open, setOpen }), [open])
+
+  // `?` is a plain character, so it is only a shortcut when nothing is being
+  // typed into — including the palette's own search field.
+  useEffect(() => {
+    const onKeyDown = (e: KeyboardEvent) => {
+      if (e.metaKey || e.ctrlKey || e.altKey || isTypingTarget(e.target)) return
+      if (e.key === '?') {
+        e.preventDefault()
+        setOpen(open === 'shortcuts' ? null : 'shortcuts')
+        return
+      }
+      if (e.key === 'Escape' && open === 'shortcuts') {
+        e.preventDefault()
+        setOpen(null)
+      }
+    }
+    document.addEventListener('keydown', onKeyDown)
+    return () => document.removeEventListener('keydown', onKeyDown)
+  }, [open])
+
   return (
-    <PaletteContext.Provider value={value}>
+    <OverlayContext.Provider value={value}>
       {children}
       <CommandPalette />
-    </PaletteContext.Provider>
+      {open === 'shortcuts' && <ShortcutSheet onClose={() => setOpen(null)} />}
+    </OverlayContext.Provider>
   )
 }
 
@@ -32,7 +68,8 @@ type Item = {
 }
 
 function CommandPalette() {
-  const { open, setOpen } = useContext(PaletteContext)
+  const { open: overlay, setOpen } = useContext(OverlayContext)
+  const open = overlay === 'palette'
   const [query, setQuery] = useState('')
   const [index, setIndex] = useState(0)
   const inputRef = useRef<HTMLInputElement>(null)
@@ -69,7 +106,7 @@ function CommandPalette() {
     const onKeyDown = (e: KeyboardEvent) => {
       if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'k') {
         e.preventDefault()
-        setOpen(!open)
+        setOpen(open ? null : 'palette')
         setQuery('')
         setIndex(0)
       }
@@ -91,7 +128,7 @@ function CommandPalette() {
 
   const choose = (item: Item | undefined) => {
     if (!item) return
-    setOpen(false)
+    setOpen(null)
     navigate(`/review/${item.projectId}`)
   }
 
@@ -99,7 +136,7 @@ function CommandPalette() {
     <div
       className="fixed inset-0 z-50 grid place-items-start justify-center bg-scrim pt-[12vh]"
       onMouseDown={(e) => {
-        if (e.target === e.currentTarget) setOpen(false)
+        if (e.target === e.currentTarget) setOpen(null)
       }}
     >
       <div
@@ -121,7 +158,7 @@ function CommandPalette() {
           onKeyDown={(e) => {
             if (e.key === 'Escape') {
               e.preventDefault()
-              setOpen(false)
+              setOpen(null)
               return
             }
             if (e.key === 'ArrowDown' || e.key === 'ArrowUp') {
