@@ -7,7 +7,7 @@ import { isFenceDelimiter, splitFences } from '@/review/templates'
 import type { Grade } from '@/review/types'
 import { usePaletteOpen } from '@/components/CommandPalette'
 import { isTypingTarget } from '@/review/useGradingKeys'
-import { Button, Kbd, Label } from '@/components/primitives'
+import { Button, ConfirmButton, Kbd, Label } from '@/components/primitives'
 import { ThemeToggle } from '@/components/Theme'
 import { useToast } from '@/components/Toast'
 import { copyText } from '@/lib/clipboard'
@@ -130,7 +130,6 @@ export function Send() {
   })
 
   const closeReview = () => {
-    if (!window.confirm('Close this review and clear its saved draft?')) return
     discard()
     navigate('/')
     flash('Review closed')
@@ -162,9 +161,9 @@ export function Send() {
           Copy to clipboard
           <Kbd>{chord(ENTER)}</Kbd>
         </Button>
-        <Button variant="danger" onClick={closeReview}>
+        <ConfirmButton variant="danger" confirmLabel="Close and discard?" onConfirm={closeReview}>
           Close review
-        </Button>
+        </ConfirmButton>
       </div>
 
       <div className="flex min-h-0 flex-1 max-rails:flex-col">

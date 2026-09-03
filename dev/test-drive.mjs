@@ -531,6 +531,37 @@ async function main() {
   await page.keyboard.press('Control+Enter')
   await page.waitForSelector('text=Slack preview')
 
+  /* ---------------- discarding a draft ---------------- */
+
+  section('Discarding a draft')
+  // Never covered before, which is how a silent failure here went unnoticed.
+  // The confirmation is in the page, not a browser dialog: window.confirm can
+  // be switched off by the viewer ("prevent this page from creating
+  // additional dialogs") and then returns false forever, leaving the button
+  // dead with no feedback.
+  let dialogsOpened = 0
+  page.on('dialog', async (d) => {
+    dialogsOpened += 1
+    await d.accept()
+  })
+  await page.goto(BASE)
+  await page.waitForSelector('[data-testid="resume-drafts"]')
+  await page.click('text=Discard')
+  await page.waitForTimeout(150)
+  check('the first press asks rather than acting', await page.isVisible('[data-armed="true"]'))
+  check(
+    'and the draft is still there',
+    (await page.evaluate(() => Object.keys(localStorage).filter((k) => k.includes('draft')).length)) > 0,
+  )
+  await page.click('[data-armed="true"]')
+  await page.waitForTimeout(300)
+  check(
+    'the second press discards it',
+    (await page.evaluate(() => Object.keys(localStorage).filter((k) => k.includes('draft')).length)) === 0,
+  )
+  check('the card goes with it', !(await page.isVisible('[data-testid="resume-drafts"]').catch(() => false)))
+  check('no browser dialog was involved', dialogsOpened === 0, String(dialogsOpened))
+
   /* ---------------- exceeds are optional ---------------- */
 
   section('Exceeds do not hold a review hostage')

@@ -1,3 +1,4 @@
+import { useEffect, useState } from 'react'
 import { cn } from '@/lib/cn'
 import logoUrl from '@/assets/treehouse-logo.png'
 
@@ -55,5 +56,51 @@ export function Button({ variant = 'default', size = 'default', className, ...re
       )}
       {...rest}
     />
+  )
+}
+
+/**
+ * A destructive action that asks first, in the page rather than in a browser
+ * dialog. `window.confirm` looks reliable and is not: once a viewer ticks
+ * Chrome's "prevent this page from creating additional dialogs" — which it
+ * offers after a few dialogs in a row — confirm() silently returns false for
+ * the rest of the page's life, and the button appears broken with no
+ * feedback at all. This cannot be suppressed.
+ *
+ * First press arms it, second press commits. It disarms on blur, and after a
+ * few seconds, so a stray click never leaves a live destructive button under
+ * the cursor.
+ */
+export function ConfirmButton({
+  onConfirm,
+  confirmLabel,
+  children,
+  ...rest
+}: Omit<ButtonProps, 'onClick'> & { onConfirm: () => void; confirmLabel: string }) {
+  const [armed, setArmed] = useState(false)
+
+  useEffect(() => {
+    if (!armed) return
+    const timer = setTimeout(() => setArmed(false), 4000)
+    return () => clearTimeout(timer)
+  }, [armed])
+
+  return (
+    <Button
+      {...rest}
+      aria-live="polite"
+      data-armed={String(armed)}
+      onBlur={() => setArmed(false)}
+      onClick={() => {
+        if (!armed) {
+          setArmed(true)
+          return
+        }
+        setArmed(false)
+        onConfirm()
+      }}
+    >
+      {armed ? confirmLabel : children}
+    </Button>
   )
 }

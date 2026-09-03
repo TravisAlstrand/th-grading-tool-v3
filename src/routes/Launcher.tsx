@@ -7,7 +7,7 @@ import type { Draft } from '@/review/types'
 import { ago, plural } from '@/lib/time'
 import { cn } from '@/lib/cn'
 import { ENTER, chord } from '@/lib/platform'
-import { Button, Label, Logo } from '@/components/primitives'
+import { Button, ConfirmButton, Label, Logo } from '@/components/primitives'
 import { EmptyState, ErrorState, LoadingState } from '@/components/StateViews'
 import { ThemeToggle } from '@/components/Theme'
 import { useToast } from '@/components/Toast'
@@ -104,8 +104,7 @@ export function Launcher() {
     )
   }
 
-  const discard = (draft: Draft, title: string) => {
-    if (!window.confirm(`Discard the saved review for ${title}?`)) return
+  const discard = (draft: Draft) => {
     deleteDraft(draft.projectId)
     setDrafts(loadDrafts())
     flash('Draft discarded', 'plain')
@@ -113,7 +112,7 @@ export function Launcher() {
 
   return (
     <>
-        <div data-testid="launcher" className="flex min-h-0 flex-1">
+      <div data-testid="launcher" className="flex min-h-0 flex-1">
         {/* Techdegree rail */}
         <div className="flex w-[295px] shrink-0 flex-col border-r border-line bg-panel max-rails:hidden">
           <div className="flex items-center gap-2.5 border-b border-line p-[20px] font-bold tracking-[-.01em]">
@@ -220,9 +219,13 @@ export function Launcher() {
                       <Button variant="primary" onClick={() => navigate(`/review/${draft.projectId}`)}>
                         Continue
                       </Button>
-                      <Button variant="danger" onClick={() => discard(draft, found.project.title)}>
+                      <ConfirmButton
+                        variant="danger"
+                        confirmLabel="Discard?"
+                        onConfirm={() => discard(draft)}
+                      >
                         Discard
-                      </Button>
+                      </ConfirmButton>
                     </div>
                   </div>
                 )
