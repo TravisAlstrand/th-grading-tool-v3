@@ -1,7 +1,7 @@
-import { useCallback, useEffect, useMemo, useRef } from 'react'
+import { useCallback, useEffect, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useReviewContext } from './ReviewLayout'
-import { flatRequirements, sectionStatus } from '@/review/selectors'
+import { sectionStatus } from '@/review/selectors'
 import { GRADES, takesNote } from '@/review/grades'
 import { useGradingKeys } from '@/review/useGradingKeys'
 import type { Grade } from '@/review/types'
@@ -11,7 +11,7 @@ import { RequirementRow } from '@/components/RequirementRow'
 import { Button, Kbd, Label } from '@/components/primitives'
 import { ThemeToggle } from '@/components/Theme'
 import { useToast } from '@/components/Toast'
-import { ago } from '@/lib/time'
+import { plural } from '@/lib/time'
 import { cn } from '@/lib/cn'
 import { ENTER, chord } from '@/lib/platform'
 
@@ -20,12 +20,6 @@ const DOT: Record<Grade | 'unreviewed', string> = {
   questioned: 'bg-questioned',
   needs: 'bg-needs',
   unreviewed: 'bg-edge-2',
-}
-
-const SEG: Record<Grade, string> = {
-  met: 'bg-met',
-  questioned: 'bg-questioned',
-  needs: 'bg-needs',
 }
 
 /**
@@ -68,12 +62,11 @@ function SectionHeader({
 
 export function Grading() {
   const { project, session } = useReviewContext()
-  const { review, tally, dispatch, savedAt, saveFailed, canUndo } = session
+  const { review, tally, dispatch, saveFailed, canUndo } = session
   const navigate = useNavigate()
   const flash = useToast()
   const paletteOpen = usePaletteOpen()
 
-  const list = useMemo(() => flatRequirements(project), [project])
   const editorRef = useRef<HTMLTextAreaElement>(null)
   const focusedRowRef = useRef<HTMLDivElement>(null)
   const wantEditorFocus = useRef(0)
@@ -117,8 +110,17 @@ export function Grading() {
         return
       }
       const n = tally.unreviewed
-      dispatch({ type: 'markRemainingMet' })
+      dispatch({ type: 'markRemainingMet', scope: 'required' })
       flash(`Marked ${n} as ${GRADES.met.word}`)
+    },
+    onMarkExceeds: () => {
+      if (!tally.exceedsUngraded) {
+        flash('No ungraded exceeds requirements', 'plain')
+        return
+      }
+      const n = tally.exceedsUngraded
+      dispatch({ type: 'markRemainingMet', scope: 'exceeds' })
+      flash(`Marked ${n} ${plural(n, 'exceeds requirement')} as ${GRADES.met.word}`)
     },
     onEditNote: () => {
       if (!takesNote(focusedEntry?.grade)) {
@@ -148,7 +150,7 @@ export function Grading() {
           ← Projects
         </Button>
         <span className="tdchip" />
-        <div className="flex min-w-0 flex-col gap-px">
+        <div className="flex min-w-0 flex-1 flex-col gap-px">
           <span className="truncate text-[15.5px] font-semibold tracking-[-.01em]">
             {project.title}
           </span>
@@ -157,51 +159,15 @@ export function Grading() {
           </span>
         </div>
 
-        <div className="flex min-w-0 max-w-[590px] flex-1 gap-[3.5px] max-rails:max-w-none">
-          {list.map(({ req }) => {
-            const grade = review.grades[req._id]?.grade
-            const focused = req._id === review.focusReqId
-            return (
-              <span
-                key={req._id}
-                className={cn(
-                  'h-1.5 min-w-1 flex-1 rounded-sm',
-                  focused ? 'bg-ink' : grade ? SEG[grade] : 'bg-edge',
-                )}
-              />
-            )
-          })}
-        </div>
-
-        <span
-          className={cn('font-mono text-[12px]', saveFailed ? 'text-needs' : 'text-ink-4')}
-          data-testid="save-state"
-        >
-          {saveFailed
-            ? 'not saved — storage blocked'
-            : savedAt
-              ? `saved ${ago(savedAt)}`
-              : 'nothing to save yet'}
-        </span>
+        {saveFailed && (
+          <span className="font-mono text-[12px] text-needs" data-testid="save-state">
+            not saved — storage blocked
+          </span>
+        )}
 
         {/* The rail below carries the toggle; this one covers the widths
             where the rail is hidden. */}
         <ThemeToggle className="rails:hidden" />
-
-        <Button
-          onClick={() => {
-            if (!tally.unreviewed) {
-              flash('Nothing left unreviewed', 'plain')
-              return
-            }
-            const n = tally.unreviewed
-            dispatch({ type: 'markRemainingMet' })
-            flash(`Marked ${n} as ${GRADES.met.word}`)
-          }}
-        >
-          Mark remaining as {GRADES.met.label.toLowerCase()}
-          <Kbd>M</Kbd>
-        </Button>
 
         <Button
           variant={tally.unreviewed ? 'held' : 'primary'}
@@ -319,8 +285,14 @@ export function Grading() {
         <span className="text-questioned">{tally.questioned} questioned</span>
         <span className="text-needs">{tally.needs} needs work</span>
         <span data-testid="unreviewed-count">{tally.unreviewed} unreviewed</span>
+        {tally.exceedsUngraded > 0 && (
+          <span data-testid="exceeds-ungraded" className="text-ink-5">
+            {tally.exceedsUngraded} exceeds not graded
+          </span>
+        )}
         <span className="ml-auto">
-          J K move · 1 2 3 grade · same key clears · E note · M mark rest · {chord('Z')} undo ·{' '}
+          J K move · 1 2 3 grade · same key clears · E note · M mark meets · X mark exceeds ·{' '}
+          {chord('Z')} undo ·{' '}
           {chord('K')} search · {chord(ENTER)} review
         </span>
       </div>

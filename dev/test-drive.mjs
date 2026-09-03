@@ -382,6 +382,15 @@ async function main() {
   check('⌘Z undoes mark-remaining in one step', afterUndo !== '0 unreviewed', afterUndo)
   await page.keyboard.press('m')
   await page.waitForTimeout(120)
+  // M is required-only now, so grade the optional ones the way a reviewer
+  // would when a student did attempt them — the rest of the run checks that
+  // a graded exceeds still reaches the output with its marker.
+  await page.keyboard.press('x')
+  await page.waitForTimeout(120)
+  check(
+    'X closes out the exceeds requirements',
+    !(await page.isVisible('[data-testid="exceeds-ungraded"]')),
+  )
 
   /* ---------------- autosave ---------------- */
 
@@ -522,6 +531,57 @@ async function main() {
   await page.keyboard.press('Control+Enter')
   await page.waitForSelector('text=Slack preview')
 
+  /* ---------------- exceeds are optional ---------------- */
+
+  section('Exceeds do not hold a review hostage')
+  await page.setViewportSize({ width: 1440, height: 900 })
+  // Start from a genuinely fresh review — the draft from the run above is
+  // still in storage and would be restored over the top of this one.
+  await page.evaluate(() => localStorage.clear())
+  await page.goto(`${BASE}/review/${GAME_SHOW_ID}`)
+  await page.waitForSelector('[data-testid="requirement"]')
+  await page.keyboard.press('m')
+  await page.waitForTimeout(250)
+  const swept = await page.evaluate(() =>
+    [...document.querySelectorAll('[data-testid="requirement"]')]
+      .filter((r) => r.textContent.includes('EXCEEDS'))
+      .map((r) => r.dataset.grade),
+  )
+  // The old behaviour marked these met, and the student was told they had
+  // passed exceeds work they never submitted.
+  check('M leaves the exceeds requirements ungraded', swept.every((g) => g === 'none'), swept.join(','))
+  check(
+    'yet nothing required is left unreviewed',
+    (await page.textContent('[data-testid="unreviewed-count"]')).startsWith('0 '),
+  )
+  check('the ungraded exceeds are still counted, quietly', await page.isVisible('[data-testid="exceeds-ungraded"]'))
+  check(
+    'and the send button is live',
+    await page.evaluate(() => {
+      const b = [...document.querySelectorAll('button')].find((x) => x.textContent.includes('Review & send'))
+      return getComputedStyle(b).backgroundColor !== 'rgba(0, 0, 0, 0)'
+    }),
+  )
+  await page.keyboard.press('Control+Enter')
+  await page.waitForSelector('text=Slack preview')
+  await page.click('text=Copy to clipboard')
+  await page.waitForTimeout(300)
+  const exceedsClip = await page.evaluate(() => navigator.clipboard.readText())
+  check('copy works with exceeds ungraded', exceedsClip.includes(':meets:'))
+  check('and no unattempted exceeds is claimed as met', !exceedsClip.includes(':exceeds:'))
+
+  await page.evaluate(() => localStorage.clear())
+  await page.goto(`${BASE}/review/${GAME_SHOW_ID}`)
+  await page.waitForSelector('[data-testid="requirement"]')
+  await page.keyboard.press('x')
+  await page.waitForTimeout(250)
+  const afterX = await page.evaluate(() =>
+    [...document.querySelectorAll('[data-testid="requirement"]')]
+      .filter((r) => r.textContent.includes('EXCEEDS'))
+      .map((r) => r.dataset.grade),
+  )
+  check('X marks the exceeds when a student did attempt them', afterX.every((g) => g === 'met'), afterX.join(','))
+
   /* ---------------- reflow ---------------- */
 
   section('Reflow')
@@ -587,21 +647,34 @@ async function main() {
   check('the section rail measures its scaled width', sized.railWidth === 260, `${sized.railWidth}px`)
   // The shell is height:100% with overflow:hidden, so a scale that the
   // viewport cannot absorb would clip the status bar or add a scrollbar.
+  // `body` is overflow:hidden, so a page scrollbar can never actually appear
+  // and documentElement.scrollHeight only reports content extent — it says
+  // nothing about whether the scale fits. What matters is that the fixed
+  // chrome is not pushed off the bottom: the status bar has to stay on screen.
   const fit = await page.evaluate(() => {
-    const de = document.documentElement
+    const bars = [...document.getElementById('root').children].filter(
+      (el) => el.getBoundingClientRect().height > 4,
+    )
+    const status = bars[bars.length - 1].getBoundingClientRect()
     return {
-      vScroll: de.scrollHeight > de.clientHeight + 1,
-      hScroll: de.scrollWidth > de.clientWidth + 1,
+      hScroll: document.documentElement.scrollWidth > document.documentElement.clientWidth + 1,
       shellBottom: Math.round(document.body.getBoundingClientRect().bottom),
+      statusBottom: Math.round(status.bottom),
       viewportH: window.innerHeight,
+      bodyOverflow: getComputedStyle(document.body).overflowY,
     }
   })
-  check('scaling adds no vertical scrollbar', !fit.vScroll)
   check('scaling adds no horizontal scrollbar', !fit.hScroll)
+  check('the page itself never scrolls', fit.bodyOverflow === 'hidden', fit.bodyOverflow)
   check(
     'the shell still ends exactly at the viewport',
     Math.abs(fit.shellBottom - fit.viewportH) <= 1,
     `${fit.shellBottom} vs ${fit.viewportH}`,
+  )
+  check(
+    'and the status bar is not pushed off the bottom',
+    Math.abs(fit.statusBottom - fit.viewportH) <= 1,
+    `${fit.statusBottom} vs ${fit.viewportH}`,
   )
   // Fixed-position overlays are the usual casualty of CSS zoom.
   await page.keyboard.press('Control+k')

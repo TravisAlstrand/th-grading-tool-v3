@@ -20,6 +20,7 @@ export type GradingKeyHandlers = {
   onMove: (delta: number) => void
   onGrade: (grade: Grade) => void
   onMarkRemaining: () => void
+  onMarkExceeds: () => void
   onEditNote: () => void
   onUndo: () => void
   onAdvance: () => void
@@ -98,6 +99,14 @@ export function useGradingKeys(enabled: boolean, handlers: GradingKeyHandlers): 
       if (e.key === 'm' || e.key === 'M') {
         e.preventDefault()
         h.onMarkRemaining()
+        return
+      }
+      // Deliberately its own key rather than a second press of M: the point
+      // of scoping M was that it can never credit unattempted exceeds, and a
+      // mode-switching M would hand that hazard straight back.
+      if (e.key === 'x' || e.key === 'X') {
+        e.preventDefault()
+        h.onMarkExceeds()
         return
       }
       if (e.key === 'e' || e.key === 'E') {

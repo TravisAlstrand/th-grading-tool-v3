@@ -13,7 +13,7 @@ const id = (n: number) => {
 function start(): ReviewState {
   return reviewReducer(
     initReviewState(newReview(GAME_SHOW._id, GAME_SHOW.techdegree?._id ?? null)),
-    { type: 'hydrate', requirementIds: ids },
+    { type: 'hydrate', exceedsIds: [], requirementIds: ids },
   )
 }
 
@@ -27,7 +27,7 @@ describe('reviewReducer', () => {
       ...newReview(GAME_SHOW._id),
       focusReqId: id(5),
     })
-    const state = reviewReducer(resumed, { type: 'hydrate', requirementIds: ids })
+    const state = reviewReducer(resumed, { type: 'hydrate', exceedsIds: [], requirementIds: ids })
     expect(state.review.focusReqId).toBe(id(5))
   })
 
@@ -36,7 +36,7 @@ describe('reviewReducer', () => {
       ...newReview(GAME_SHOW._id),
       focusReqId: 'an-id-from-some-other-project',
     })
-    const state = reviewReducer(resumed, { type: 'hydrate', requirementIds: ids })
+    const state = reviewReducer(resumed, { type: 'hydrate', exceedsIds: [], requirementIds: ids })
     expect(state.review.focusReqId).toBe(id(0))
   })
 

@@ -26,6 +26,13 @@ export type Review = {
  */
 export type Draft = Review & { updatedAt: number }
 
+/**
+ * `total`, `reviewed` and `unreviewed` cover the REQUIRED requirements only.
+ * Exceeds are optional, so leaving one ungraded must not make a review look
+ * unfinished — it is counted on its own instead, as information rather than
+ * a blocker. The grade counts do include graded exceeds, because those are
+ * genuinely part of the review.
+ */
 export type Tally = {
   met: number
   questioned: number
@@ -33,4 +40,5 @@ export type Tally = {
   unreviewed: number
   reviewed: number
   total: number
+  exceedsUngraded: number
 }

@@ -2,7 +2,7 @@ import { useCallback, useEffect, useMemo, useReducer, useRef, useState } from 'r
 import type { ProjectDetail } from '@/sanity/types'
 import { initReviewState, newReview, reviewReducer, type ReviewAction } from './reducer'
 import { deleteDraft, loadDraft, saveDraft } from './storage'
-import { requirementIds as idsOf, tally } from './selectors'
+import { exceedsIds as exceedsOf, requirementIds as idsOf, tally } from './selectors'
 import type { Review, Tally } from './types'
 
 export type ReviewSession = {
@@ -53,11 +53,12 @@ export function useReviewSession(
   const [saveFailed, setSaveFailed] = useState(false)
 
   const requirementIds = useMemo(() => idsOf(project), [project])
+  const exceedsIds = useMemo(() => exceedsOf(project), [project])
 
   useEffect(() => {
     if (!requirementIds.length) return
-    dispatch({ type: 'hydrate', requirementIds })
-  }, [requirementIds])
+    dispatch({ type: 'hydrate', requirementIds, exceedsIds })
+  }, [requirementIds, exceedsIds])
 
   const { review } = state
 
@@ -77,7 +78,10 @@ export function useReviewSession(
     setSavedAt(null)
   }, [projectId])
 
-  const counts = useMemo(() => tally(requirementIds, review.grades), [requirementIds, review.grades])
+  const counts = useMemo(
+    () => tally(requirementIds, review.grades, exceedsIds),
+    [requirementIds, review.grades, exceedsIds],
+  )
 
   return {
     review,

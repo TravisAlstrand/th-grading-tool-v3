@@ -23,20 +23,35 @@ export function requirementIds(project: ProjectDetail | null | undefined): strin
   return flatRequirements(project).map(({ req }) => req._id)
 }
 
-export function tally(ids: string[], grades: Grades): Tally {
+/** The optional ones. Ungraded, they neither block a review nor enter it. */
+export function exceedsIds(project: ProjectDetail | null | undefined): string[] {
+  return flatRequirements(project)
+    .filter(({ req }) => req.isExceeds)
+    .map(({ req }) => req._id)
+}
+
+export function tally(
+  ids: string[],
+  grades: Grades,
+  exceeds: readonly string[] = [],
+): Tally {
+  const optional = new Set(exceeds)
   const t: Tally = {
     met: 0,
     questioned: 0,
     needs: 0,
     unreviewed: 0,
     reviewed: 0,
-    total: ids.length,
+    total: ids.length - optional.size,
+    exceedsUngraded: 0,
   }
   for (const id of ids) {
     const grade = grades[id]?.grade
     if (grade) {
       t[grade] += 1
-      t.reviewed += 1
+      if (!optional.has(id)) t.reviewed += 1
+    } else if (optional.has(id)) {
+      t.exceedsUngraded += 1
     } else {
       t.unreviewed += 1
     }

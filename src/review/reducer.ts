@@ -24,17 +24,19 @@ export type ReviewState = {
   review: Review
   /** Every requirement id in rubric order. Set once the project detail loads. */
   requirementIds: string[]
+  /** Subset of requirementIds that are exceeds, i.e. optional. */
+  exceedsIds: string[]
   undo: UndoFrame[]
 }
 
 export type ReviewAction =
-  | { type: 'hydrate'; requirementIds: string[] }
+  | { type: 'hydrate'; requirementIds: string[]; exceedsIds: string[] }
   | { type: 'grade'; reqId: string; grade: Grade }
   | { type: 'setNote'; reqId: string; note: string }
   | { type: 'focus'; reqId: string }
   | { type: 'move'; delta: number }
   | { type: 'advance' }
-  | { type: 'markRemainingMet' }
+  | { type: 'markRemainingMet'; scope?: 'required' | 'exceeds' }
   | { type: 'setOpening'; value: string }
   | { type: 'setClosing'; value: string }
   | { type: 'setTemplate'; value: TemplateId }
@@ -54,8 +56,12 @@ export function newReview(projectId: string, techdegreeId: string | null = null)
   }
 }
 
-export function initReviewState(review: Review, requirementIds: string[] = []): ReviewState {
-  return { review, requirementIds, undo: [] }
+export function initReviewState(
+  review: Review,
+  requirementIds: string[] = [],
+  exceedsIds: string[] = [],
+): ReviewState {
+  return { review, requirementIds, exceedsIds, undo: [] }
 }
 
 function pushUndo(state: ReviewState): UndoFrame[] {
@@ -77,15 +83,17 @@ function advanceFrom(ids: string[], focusReqId: string | null, grades: Grades): 
 }
 
 export function reviewReducer(state: ReviewState, action: ReviewAction): ReviewState {
-  const { review, requirementIds: ids } = state
+  const { review, requirementIds: ids, exceedsIds } = state
 
   switch (action.type) {
     case 'hydrate': {
       const requirementIds = action.requirementIds
+      const exceedsIds = action.exceedsIds
       const focusValid = review.focusReqId && requirementIds.includes(review.focusReqId)
       return {
         ...state,
         requirementIds,
+        exceedsIds,
         review: focusValid
           ? review
           : { ...review, focusReqId: requirementIds[0] ?? null },
@@ -153,7 +161,13 @@ export function reviewReducer(state: ReviewState, action: ReviewAction): ReviewS
     }
 
     case 'markRemainingMet': {
-      const remaining = ids.filter((id) => !review.grades[id])
+      // Scoped, because sweeping unattempted exceeds into "passed" would tell
+      // a student they met work they never submitted.
+      const optional = new Set(exceedsIds)
+      const wantExceeds = action.scope === 'exceeds'
+      const remaining = ids.filter(
+        (id) => !review.grades[id] && optional.has(id) === wantExceeds,
+      )
       if (!remaining.length) return state
       const undo = pushUndo(state)
       const grades: Grades = { ...review.grades }
