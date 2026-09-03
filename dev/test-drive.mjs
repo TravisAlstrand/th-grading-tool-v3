@@ -941,6 +941,28 @@ async function main() {
   check('and Ctrl+Enter still works under the new label', winPage.url().endsWith('/send'))
   await winContext.close()
 
+  /* ---------------- deploy config ---------------- */
+
+  // `vite preview` serves index.html for unknown paths all by itself, so
+  // nothing above this line can notice that a static host would 404 on
+  // /review/<id>. Verified by hand against a plain static server: without
+  // the rewrite a deep link is a 404, with it the app boots and keeps the
+  // URL. This guards the config rather than the behaviour.
+  section('Vercel deploy config')
+  const vercel = JSON.parse(readFileSync(new URL('../vercel.json', import.meta.url), 'utf8'))
+  const spa = (vercel.rewrites ?? []).find((r) => r.destination === '/index.html')
+  check('a rewrite sends unknown paths to index.html', Boolean(spa), JSON.stringify(vercel.rewrites))
+  check(
+    'and it catches every path, not just the root',
+    spa && new RegExp(`^${spa.source}$`).test('/review/abc/send'),
+    spa?.source,
+  )
+  const assetHeaders = (vercel.headers ?? []).find((h) => h.source.startsWith('/assets'))
+  check(
+    'hashed assets are cached immutably',
+    assetHeaders?.headers.some((h) => /immutable/.test(h.value)),
+  )
+
   /* ---------------- console ---------------- */
 
   section('Console')
