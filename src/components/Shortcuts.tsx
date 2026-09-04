@@ -12,7 +12,13 @@ import { ENTER, chord } from '@/lib/platform'
  * already spent ⌘K, ⌘Z and ⌘↵ — a fourth chord to memorise is a strange
  * thing to guard a list of chords with.
  */
-type Group = { title: string; rows: [keys: string[], what: string][] }
+/**
+ * A row is its keys, what it does, and — for the letters that stand for a
+ * word — the word. `E(X)CEEDS` brackets the letter that is actually the key,
+ * because X is the only one that is not the initial.
+ */
+type Row = [keys: string[], what: string, mnemonic?: string]
+type Group = { title: string; rows: Row[] }
 
 export const SHORTCUT_GROUPS: Group[] = [
   {
@@ -22,10 +28,10 @@ export const SHORTCUT_GROUPS: Group[] = [
       // One row, not two: a lone `1` against "clears the grade" read as if 1
       // were the clear key rather than the second press of whichever you used.
       [['1', '2', '3'], 'Passed · Questionable · Needs work — press the same number again to clear'],
-      [['E'], 'Write feedback on the focused requirement'],
-      [['R'], 'Study guide, mockups and validators for this project'],
-      [['M'], 'Mark every remaining required requirement as passed'],
-      [['X'], 'Mark every ungraded exceeds requirement as passed'],
+      [['E'], 'Write feedback on the focused requirement', 'EDIT'],
+      [['R'], 'Study guide, mockups and validators for this project', 'RESOURCES'],
+      [['M'], 'Mark every ungraded meets requirement as passed', 'MEETS'],
+      [['X'], 'Mark every ungraded exceeds requirement as passed', 'E(X)CEEDS'],
       [[chord('Z')], 'Undo the last change'],
       [[chord(ENTER)], 'Go to review & send'],
       [['Esc'], 'Back to the projects list'],
@@ -94,7 +100,7 @@ export function ShortcutSheet({ onClose }: { onClose: () => void }) {
           {SHORTCUT_GROUPS.map((group) => (
             <div key={group.title} className="flex flex-col gap-1.5">
               <span className="label">{group.title}</span>
-              {group.rows.map(([keys, what]) => (
+              {group.rows.map(([keys, what, mnemonic]) => (
                 <div
                   key={what}
                   className="grid grid-cols-[92px_minmax(0,1fr)] items-baseline gap-4"
@@ -104,7 +110,18 @@ export function ShortcutSheet({ onClose }: { onClose: () => void }) {
                       <Kbd key={key}>{key}</Kbd>
                     ))}
                   </span>
-                  <span className="text-[14.5px] leading-[1.5] text-ink-2">{what}</span>
+                  <span className="text-[14.5px] leading-[1.5] text-ink-2">
+                    {/* Mono and accent so it reads as the memory hook rather
+                        than the first word of the sentence — the keycap it
+                        explains is mono too. */}
+                    {mnemonic && (
+                      <span className="font-mono text-[12.5px] font-semibold tracking-[.06em] text-accent">
+                        {mnemonic}
+                        <span className="text-ink-5"> · </span>
+                      </span>
+                    )}
+                    {what}
+                  </span>
                 </div>
               ))}
             </div>

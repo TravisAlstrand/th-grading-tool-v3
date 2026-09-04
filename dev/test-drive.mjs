@@ -453,7 +453,14 @@ async function main() {
   check('the launcher offers the draft to resume', (await page.textContent('body')).includes('Resume'))
   // Drafts are not owned by the selected techdegree, so they show with
   // nothing picked and they sit above the techdegree heading, not under it.
-  check('unfinished reviews show with no techdegree selected', await page.isVisible('[data-testid="resume-drafts"]'))
+  check('saved reviews show with no techdegree selected', await page.isVisible('[data-testid="resume-drafts"]'))
+  // Every other check here goes by test id, so the heading itself was never
+  // asserted and could be renamed out from under the UI unnoticed.
+  check(
+    'and the section is headed "Saved reviews"',
+    (await page.textContent('[data-testid="resume-drafts"]')).includes('Saved reviews'),
+    await page.$eval('[data-testid="resume-drafts"] .label', (el) => el.textContent.trim()),
+  )
   check('and nothing is auto-selected on the way back', !(await page.$('h1')))
   await page.click('[data-testid="techdegree"]:visible')
   await page.waitForSelector('h1')
@@ -572,7 +579,7 @@ async function main() {
     `${draftsBefore} before`,
   )
   check(
-    'so the review is waiting under unfinished reviews',
+    'so the review is waiting under saved reviews',
     await page.isVisible('[data-testid="resume-drafts"]'),
   )
   await page.goto(`${BASE}/review/${GAME_SHOW_ID}/send`)
@@ -772,9 +779,16 @@ async function main() {
   await page.waitForSelector('[data-testid="shortcuts"]')
   check('? opens it', await page.isVisible('[data-testid="shortcuts"]'))
   const sheet = await page.textContent('[data-testid="shortcuts"]')
+  // The letter keys carry the word they stand for. X is bracketed because it
+  // is the only one that is not the initial of its word.
+  check(
+    'the letter keys name the word they stand for',
+    ['EDIT', 'RESOURCES', 'MEETS', 'E(X)CEEDS'].every((m) => sheet.includes(m)),
+    ['EDIT', 'RESOURCES', 'MEETS', 'E(X)CEEDS'].filter((m) => !sheet.includes(m)).join(', '),
+  )
   check(
     'it carries the grading keys that left the bar',
-    ['Move between requirements', 'Mark every remaining', 'exceeds requirement', 'Undo the last change'].every(
+    ['Move between requirements', 'meets requirement', 'exceeds requirement', 'Undo the last change'].every(
       (t) => sheet.includes(t),
     ),
   )

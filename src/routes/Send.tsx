@@ -315,7 +315,6 @@ export function Send() {
       </div>
 
       <div className="flex shrink-0 items-center gap-5 border-t border-line bg-panel px-6 py-[10px] font-mono text-[12px] text-ink-4 max-rails:px-4">
-        <span>copying keeps the review open — it does not reset the app</span>
         <span className="ml-auto">
           {savedAt ? `draft saved ${ago(savedAt)}` : 'draft not saved'}
         </span>

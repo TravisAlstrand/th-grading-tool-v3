@@ -67,7 +67,7 @@ function HomeIcon() {
  * the destructive one: `Close review` throws the draft away, and the only
  * other way out was back to the rubric and then out again. The draft is
  * written to storage on every change, so this just navigates — the review is
- * waiting under "Unfinished reviews" when you come back.
+ * waiting under "Saved reviews" when you come back.
  */
 export function HomeButton({ className, onClick }: { className?: string; onClick: () => void }) {
   return (

@@ -217,7 +217,7 @@ export function Launcher() {
               data-testid="resume-drafts"
               className="flex flex-col gap-2.5 border-b border-line px-8 py-5 max-rails:px-[20px]"
             >
-              <Label>Unfinished reviews</Label>
+              <Label>Saved reviews</Label>
               {knownDrafts.slice(0, 3).map((draft) => {
                 const found = byProjectId.get(draft.projectId)!
                 const reviewed = Object.keys(draft.grades).length
