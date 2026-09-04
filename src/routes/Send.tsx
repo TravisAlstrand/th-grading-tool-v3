@@ -3,11 +3,11 @@ import { useNavigate } from 'react-router-dom'
 import { useReviewContext } from './ReviewLayout'
 import { buildReview } from '@/review/buildReview'
 import { GRADES, GRADE_ORDER } from '@/review/grades'
-import { isFenceDelimiter, splitFences } from '@/review/templates'
+import { getTemplate, isFenceDelimiter, splitFences } from '@/review/templates'
 import type { Grade } from '@/review/types'
 import { useOverlayOpen } from '@/components/Overlays'
 import { isTypingTarget } from '@/review/useGradingKeys'
-import { Button, ConfirmButton, Kbd, Label } from '@/components/primitives'
+import { Button, ConfirmButton, HomeButton, Kbd, Label } from '@/components/primitives'
 import { ThemeToggle } from '@/components/Theme'
 import { useToast } from '@/components/Toast'
 import { copyText } from '@/lib/clipboard'
@@ -91,6 +91,14 @@ export function Send() {
 
   const { text, groups } = useMemo(() => buildReview(review, project), [review, project])
 
+  // This preview redraws the message from `groups` rather than printing
+  // `text`, so that :meets: can show as a tick the way Slack renders it. That
+  // freedom is also how it can quietly disagree with what the student gets —
+  // it missed the rule before the closing line. The condition is read back
+  // out of the built text rather than reimplemented here.
+  const rule = getTemplate(review.template).divider
+  const showsRule = Boolean(rule) && text.includes(rule)
+
   const copy = async () => {
     if (tally.unreviewed) {
       flash(
@@ -102,7 +110,7 @@ export function Send() {
     }
     const ok = await copyText(text)
     flash(
-      ok ? 'Review copied — it is still here' : 'Copy failed; select the preview text instead',
+      ok ? 'Review copied' : 'Copy failed; select the preview text instead',
       ok ? 'ok' : 'plain',
     )
   }
@@ -156,6 +164,7 @@ export function Send() {
         >
           {tally.unreviewed ? `${tally.unreviewed} unreviewed` : 'nothing unreviewed'}
         </span>
+        <HomeButton onClick={() => navigate('/')} />
         <ThemeToggle />
         <Button variant={tally.unreviewed ? 'held' : 'primary'} onClick={() => void copy()}>
           Copy to clipboard
@@ -283,8 +292,17 @@ export function Send() {
                       </div>
                     )
                   })}
+                  {showsRule && (
+                    <span
+                      aria-hidden="true"
+                      data-testid="preview-rule"
+                      className="mt-2.5 truncate text-quote select-none"
+                    >
+                      {rule}
+                    </span>
+                  )}
                   {review.closing.trim() && (
-                    <span className="mt-2.5">{review.closing.trim()}</span>
+                    <span className={showsRule ? 'mt-1' : 'mt-2.5'}>{review.closing.trim()}</span>
                   )}
                 </div>
               </div>

@@ -512,11 +512,71 @@ async function main() {
   check('exceeds requirements carry the exceeds marker', clipboard.includes(':exceeds:'))
   check('the note is quoted', clipboard.includes('> Only 3 phrases, and 2 contain digits.'))
   check('met items are grouped before flagged ones', clipboard.indexOf(':meets:') < clipboard.indexOf(':needs-work:'))
+  // What lands in Slack is the thing that matters, so assert on the actual
+  // clipboard rather than only on buildReview's return value.
+  const markedLines = clipboard
+    .split('\n')
+    .filter((l) => /^:(meets|questioned|needs-work):/.test(l))
+  check(
+    'every marker is followed by a space before the title',
+    markedLines.length > 0 && markedLines.every((l) => /^:[a-z-]+: \S/.test(l)),
+    markedLines.find((l) => !/^:[a-z-]+: \S/.test(l)) ?? '',
+  )
+  check(
+    'and an exceeds line keeps both markers spaced',
+    clipboard.includes(':meets: :exceeds: ') || clipboard.includes(':needs-work: :exceeds: '),
+    markedLines.find((l) => l.includes(':exceeds:')) ?? 'no exceeds line',
+  )
+  const clipLines = clipboard.trimEnd().split('\n')
+  const ruleAt = clipLines.findIndex((l) => /^─+$/.test(l))
+  check(
+    'a rule separates the requirements from the closing line',
+    ruleAt > 0 && clipLines.slice(ruleAt + 1).join('\n').trim().length > 0,
+    ruleAt === -1 ? 'no rule' : clipLines.slice(ruleAt - 1, ruleAt + 2).join(' ⏎ '),
+  )
+  check(
+    'and nothing after the rule carries a grade marker',
+    !clipLines.slice(ruleAt + 1).some((l) => /^:(meets|questioned|needs-work):/.test(l)),
+  )
   check('copying leaves the review exactly where it was', page.url().endsWith('/send'))
+  check(
+    'the toast says just what happened',
+    (await page.textContent('body')).includes('Review copied'),
+  )
+  // The preview redraws the message instead of printing the built text, so
+  // it is the one that can drift from what the student receives.
+  check(
+    'the Slack preview shows the same rule the output has',
+    (await page.isVisible('[data-testid="preview-rule"]')) === /─/.test(clipboard),
+  )
+
+
   check(
     'and does not reload the page',
     (await page.textContent('body')).includes('Only 3 phrases, and 2 contain digits.'),
   )
+
+  // Leaving must not be the same gesture as discarding: `Close review` throws
+  // the draft away, and it used to be the only one-click way out of here.
+  const draftsBefore = await page.evaluate(
+    () => Object.keys(localStorage).filter((k) => k.includes('draft')).length,
+  )
+  await page.click('[data-testid="home-button"]')
+  await page.waitForSelector('[data-testid="launcher"]')
+  check('the home button leaves the send screen in one click', !page.url().includes('/send'))
+  check(
+    'and keeps the draft rather than discarding it',
+    (await page.evaluate(
+      () => Object.keys(localStorage).filter((k) => k.includes('draft')).length,
+    )) === draftsBefore && draftsBefore > 0,
+    `${draftsBefore} before`,
+  )
+  check(
+    'so the review is waiting under unfinished reviews',
+    await page.isVisible('[data-testid="resume-drafts"]'),
+  )
+  await page.goto(`${BASE}/review/${GAME_SHOW_ID}/send`)
+  await page.waitForSelector('[data-testid="home-button"]')
 
   /* ---------------- light and dark ---------------- */
 

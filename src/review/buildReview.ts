@@ -52,9 +52,12 @@ export function buildReview(review: Review, project: ProjectDetail | null | unde
   const opening = review.opening.trim()
   if (opening) blocks.push(opening)
 
+  let wroteRequirements = false
+
   for (const grade of GRADE_ORDER) {
     const items = groups[grade]
     if (!items.length) continue
+    wroteRequirements = true
 
     const lines: string[] = []
     for (const { req, note } of items) {
@@ -66,7 +69,12 @@ export function buildReview(review: Review, project: ProjectDetail | null | unde
   }
 
   const closing = review.closing.trim()
-  if (closing) blocks.push(closing)
+  if (closing) {
+    // Only between the two: a review with no graded requirements would
+    // otherwise open with a rule under the greeting.
+    if (wroteRequirements && template.divider) blocks.push(template.divider)
+    blocks.push(closing)
+  }
 
   return { text: blocks.join('\n\n') + '\n', groups }
 }

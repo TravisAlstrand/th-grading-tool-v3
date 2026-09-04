@@ -42,6 +42,48 @@ export function KeyHint({
   )
 }
 
+function HomeIcon() {
+  return (
+    <svg
+      width="16.5"
+      height="16.5"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.8"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden="true"
+    >
+      <path d="M3.5 10.5 12 3.5l8.5 7" />
+      <path d="M5.5 9.8V20h13V9.8" />
+      <path d="M9.5 20v-6h5v6" />
+    </svg>
+  )
+}
+
+/**
+ * Leaving is not the same as discarding, and the send screen only offered
+ * the destructive one: `Close review` throws the draft away, and the only
+ * other way out was back to the rubric and then out again. The draft is
+ * written to storage on every change, so this just navigates — the review is
+ * waiting under "Unfinished reviews" when you come back.
+ */
+export function HomeButton({ className, onClick }: { className?: string; onClick: () => void }) {
+  return (
+    <Button
+      size="icon"
+      className={className}
+      onClick={onClick}
+      aria-label="Back to projects"
+      title="Back to projects — this draft stays saved"
+      data-testid="home-button"
+    >
+      <HomeIcon />
+    </Button>
+  )
+}
+
 export function Label({ children, className }: { children: React.ReactNode; className?: string }) {
   return <span className={cn('label', className)}>{children}</span>
 }

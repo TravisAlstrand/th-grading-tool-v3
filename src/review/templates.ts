@@ -12,10 +12,22 @@ export type Template = {
   mark: Record<Grade, string>
   /** Marker printed before the title of a requirement flagged as exceeds. */
   exceeds: string
-  /** Separator between marker and title. Slack emoji need none. */
+  /**
+   * Separator between marker and title. This was empty on the theory that
+   * Slack emoji carry their own trailing space — they do not, and every
+   * non-exceeds line went out as `:meets:The requirement`. Exceeds lines
+   * looked right only because `exceeds` below ends in a space of its own.
+   */
   gap: string
   /** How a reviewer's note is quoted under its requirement. */
   quote: (note: string) => string
+  /**
+   * Printed on its own between the last requirement and the closing line, so
+   * the sign-off does not read as one more note about the last requirement.
+   * Slack has no horizontal rule in mrkdwn, so it is drawn characters.
+   * Empty means no rule.
+   */
+  divider: string
 }
 
 export type NoteSegment = {
@@ -105,8 +117,9 @@ export const SLACK_TEMPLATE: Template = {
     needs: ':needs-work:',
   },
   exceeds: ':exceeds: ',
-  gap: '',
+  gap: ' ',
   quote: quoteWithFences,
+  divider: '────────────────────',
 }
 
 export const TEMPLATES: Record<TemplateId, Template> = {

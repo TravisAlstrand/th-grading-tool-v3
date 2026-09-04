@@ -35,7 +35,7 @@ describe('buildReview', () => {
       ]),
     )
     const { text } = buildReview(review, GAME_SHOW)
-    expect(text).toContain(`:meets:${titleOf(id(0))}`)
+    expect(text).toContain(`:meets: ${titleOf(id(0))}`)
     expect(text.indexOf(titleOf(id(0)))).toBeLessThan(text.indexOf(titleOf(id(1))))
     expect(text.indexOf(titleOf(id(1)))).toBeLessThan(text.indexOf(titleOf(id(2))))
   })
@@ -61,7 +61,7 @@ describe('buildReview', () => {
     )
     const { text } = buildReview(review, GAME_SHOW)
     expect(text).toContain(
-      `:needs-work:${titleOf(id(1))}\n> Only three phrases.\n> Add two more.`,
+      `:needs-work: ${titleOf(id(1))}\n> Only three phrases.\n> Add two more.`,
     )
   })
 
@@ -78,7 +78,7 @@ describe('buildReview', () => {
     const { text } = buildReview(review, GAME_SHOW)
     expect(text).toContain(
       [
-        `:needs-work:${titleOf(id(1))}`,
+        `:needs-work: ${titleOf(id(1))}`,
         '> Two of these are still var:',
         '```js',
         'var total = items.length',
@@ -98,7 +98,7 @@ describe('buildReview', () => {
     const { text, groups } = buildReview(review, GAME_SHOW)
     expect(text).not.toContain('Only three phrases')
     expect(text).not.toContain('>')
-    expect(text).toContain(`:meets:${titleOf(id(1))}`)
+    expect(text).toContain(`:meets: ${titleOf(id(1))}`)
     // groups feed the send screen, so they must not disagree with the text.
     expect(groups.met[0]?.note).toBe('')
   })
@@ -115,7 +115,7 @@ describe('buildReview', () => {
     const review = reviewFor(GAME_SHOW, gradesFrom([[id(1), 'needs', '   \n  ']]))
     const { text } = buildReview(review, GAME_SHOW)
     expect(text).not.toContain('>')
-    expect(text).toContain(`:needs-work:${titleOf(id(1))}`)
+    expect(text).toContain(`:needs-work: ${titleOf(id(1))}`)
   })
 
   it('prefixes exceeds requirements and sorts them after plain ones in their group', () => {
@@ -132,14 +132,61 @@ describe('buildReview', () => {
       ]),
     )
     const { text } = buildReview(review, GAME_SHOW)
-    expect(text).toContain(`:meets::exceeds: ${titleOf(exceedsId)}`)
+    expect(text).toContain(`:meets: :exceeds: ${titleOf(exceedsId)}`)
     expect(text.indexOf(titleOf(plainId))).toBeLessThan(text.indexOf(titleOf(exceedsId)))
   })
 
   it('omits an empty opening or closing line without leaving blank blocks', () => {
     const review = { ...reviewFor(GAME_SHOW, gradesFrom([[id(0), 'met']])), opening: '', closing: '' }
     const { text } = buildReview(review, GAME_SHOW)
-    expect(text).toBe(`:meets:${titleOf(id(0))}\n`)
+    expect(text).toBe(`:meets: ${titleOf(id(0))}\n`)
+  })
+
+  it('puts one space between the marker and the title, exceeds or not', () => {
+    // The gap was empty, so every non-exceeds line went out as
+    // ":meets:The requirement" while exceeds lines looked right by accident.
+    const exceedsId = id(6)
+    const review = reviewFor(
+      GAME_SHOW,
+      gradesFrom([
+        [id(0), 'met'],
+        [id(2), 'questioned', 'Some phrases have digits.'],
+        [id(1), 'needs', 'Only three phrases.'],
+        [exceedsId, 'met'],
+      ]),
+    )
+    const { text } = buildReview(review, GAME_SHOW)
+    for (const line of text.split('\n')) {
+      const marker = [':meets:', ':questioned:', ':needs-work:'].find((m) => line.startsWith(m))
+      if (!marker) continue
+      expect(line.slice(marker.length)).toMatch(/^ \S/)
+    }
+    expect(text).toContain(`:meets: :exceeds: ${titleOf(exceedsId)}`)
+  })
+
+  it('rules off the requirements before the closing line', () => {
+    const review = reviewFor(GAME_SHOW, gradesFrom([[id(0), 'met']]))
+    const { text } = buildReview(review, GAME_SHOW)
+    const lines = text.trimEnd().split('\n')
+    const rule = lines.findIndex((l) => /^─+$/.test(l))
+    expect(rule).toBeGreaterThan(-1)
+    // Between the last requirement and the closing, and nowhere else.
+    expect(lines.filter((l) => /^─+$/.test(l))).toHaveLength(1)
+    expect(lines[rule - 1]).toBe('')
+    expect(lines.slice(rule).join('\n')).toContain(DEFAULT_CLOSING)
+    expect(lines.slice(0, rule).join('\n')).toContain(titleOf(id(0)))
+  })
+
+  it('does not rule off a review with no graded requirements', () => {
+    // Otherwise the greeting gets a horizontal rule under it for no reason.
+    const { text } = buildReview(reviewFor(GAME_SHOW), GAME_SHOW)
+    expect(text).not.toMatch(/─/)
+  })
+
+  it('does not rule off when there is no closing line to separate', () => {
+    const review = { ...reviewFor(GAME_SHOW, gradesFrom([[id(0), 'met']])), closing: '' }
+    const { text } = buildReview(review, GAME_SHOW)
+    expect(text).not.toMatch(/─/)
   })
 
   it('ignores grades for requirements that are not in this project', () => {
