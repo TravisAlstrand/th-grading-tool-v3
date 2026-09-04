@@ -23,11 +23,20 @@ export const SHORTCUT_GROUPS: Group[] = [
       // were the clear key rather than the second press of whichever you used.
       [['1', '2', '3'], 'Passed · Questionable · Needs work — press the same number again to clear'],
       [['E'], 'Write feedback on the focused requirement'],
+      [['R'], 'Study guide, mockups and validators for this project'],
       [['M'], 'Mark every remaining required requirement as passed'],
       [['X'], 'Mark every ungraded exceeds requirement as passed'],
       [[chord('Z')], 'Undo the last change'],
       [[chord(ENTER)], 'Go to review & send'],
       [['Esc'], 'Back to the projects list'],
+    ],
+  },
+  {
+    title: 'Resources panel',
+    rows: [
+      [['J', 'K'], 'Move through the links (↑ ↓ and Tab work too)'],
+      [[ENTER], 'Open the focused link in a new tab'],
+      [['R', 'Esc'], 'Close'],
     ],
   },
   {

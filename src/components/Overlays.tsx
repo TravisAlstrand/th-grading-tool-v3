@@ -11,7 +11,7 @@ import { cn } from '@/lib/cn'
  * stacking — and every screen has a single thing to ask before acting on a
  * keystroke, which it would otherwise be easy to add an overlay and forget.
  */
-type Overlay = 'palette' | 'shortcuts'
+type Overlay = 'palette' | 'shortcuts' | 'resources'
 type OverlayState = { open: Overlay | null; setOpen: (open: Overlay | null) => void }
 
 const OverlayContext = createContext<OverlayState>({ open: null, setOpen: () => {} })
@@ -25,6 +25,16 @@ export function useOverlayOpen(): boolean {
 export function useOpenShortcuts(): () => void {
   const { setOpen } = useContext(OverlayContext)
   return () => setOpen('shortcuts')
+}
+
+/**
+ * The resources panel needs the project, which only the review routes have,
+ * so it is rendered from the grading screen rather than here. It still takes
+ * the shared slot: one overlay at a time, and one thing for every screen to
+ * ask before acting on a keystroke.
+ */
+export function useOverlay(): OverlayState {
+  return useContext(OverlayContext)
 }
 
 export function OverlayProvider({ children }: { children: React.ReactNode }) {
@@ -41,7 +51,7 @@ export function OverlayProvider({ children }: { children: React.ReactNode }) {
         setOpen(open === 'shortcuts' ? null : 'shortcuts')
         return
       }
-      if (e.key === 'Escape' && open === 'shortcuts') {
+      if (e.key === 'Escape' && (open === 'shortcuts' || open === 'resources')) {
         e.preventDefault()
         setOpen(null)
       }

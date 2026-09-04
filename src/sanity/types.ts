@@ -9,9 +9,14 @@
  * Two fields are typed as nullable on purpose, because in the dataset as it
  * stands today they always are:
  *   - `Requirement.description` is null for all 1,323 requirements.
- *   - `ProjectDetail.studyGuide` is set on 16 of 65 projects.
+ *   - `ProjectDetail.studyGuide` is set on 16 of 65 projects, as a plain URL.
  * The UI renders both only when present, so authoring content in Sanity
  * later lights them up with no code change.
+ *
+ * The three mockups are separate fields rather than an array, and each is
+ * independently nullable: 7 of 65 projects have at least one, and only 3 of
+ * those have all three. All are plain URL strings, mostly S3 PNGs. Rendering
+ * has to cope with any subset, including none.
  */
 
 export type TechdegreeRef = {
@@ -48,11 +53,23 @@ export type GradingSection = {
   requirements: Requirement[]
 }
 
+/** A `resource` document: a global link, not attached to any project. */
+export type Resource = {
+  _id: string
+  title: string
+  description: string | null
+  link: string
+}
+
 export type ProjectDetail = {
   _id: string
   title: string
   projectNumber: number | null
   studyGuide: string | null
+  mobileMockup: string | null
+  tabletMockup: string | null
+  desktopMockup: string | null
   techdegree: TechdegreeRef | null
   gradingSections: GradingSection[]
+  resources: Resource[]
 }

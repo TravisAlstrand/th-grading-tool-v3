@@ -3,12 +3,13 @@ import { useNavigate } from 'react-router-dom'
 import { useReviewContext } from './ReviewLayout'
 import { sectionStatus } from '@/review/selectors'
 import { GRADES, takesNote } from '@/review/grades'
-import { useGradingKeys } from '@/review/useGradingKeys'
+import { isTypingTarget, useGradingKeys } from '@/review/useGradingKeys'
 import type { Grade } from '@/review/types'
-import { useOpenShortcuts, useOverlayOpen } from '@/components/Overlays'
+import { useOpenShortcuts, useOverlay, useOverlayOpen } from '@/components/Overlays'
 import { OutputPanel } from '@/components/OutputPanel'
+import { ResourcePanel } from '@/components/Resources'
 import { RequirementRow } from '@/components/RequirementRow'
-import { Button, Kbd, Label, ShortcutsHint } from '@/components/primitives'
+import { Button, Kbd, KeyHint, Label } from '@/components/primitives'
 import { ThemeToggle } from '@/components/Theme'
 import { useToast } from '@/components/Toast'
 import { plural } from '@/lib/time'
@@ -73,6 +74,7 @@ export function Grading() {
   const flash = useToast()
   const overlayOpen = useOverlayOpen()
   const openShortcuts = useOpenShortcuts()
+  const { open: overlay, setOpen: setOverlay } = useOverlay()
 
   const editorRef = useRef<HTMLTextAreaElement>(null)
   const focusedRowRef = useRef<HTMLDivElement>(null)
@@ -146,6 +148,21 @@ export function Grading() {
     onSend: () => navigate(`/review/${project._id}/send`),
     onBack: () => navigate('/'),
   })
+
+  // R is bound here rather than in `useGradingKeys` — that hook is the
+  // grading loop, and this neither grades nor moves. It is suspended inside
+  // a note like every other bare letter, and toggles so R closes it too.
+  useEffect(() => {
+    const onKeyDown = (e: KeyboardEvent) => {
+      if (e.metaKey || e.ctrlKey || e.altKey || isTypingTarget(e.target)) return
+      if (e.key !== 'r' && e.key !== 'R') return
+      if (overlay && overlay !== 'resources') return
+      e.preventDefault()
+      setOverlay(overlay === 'resources' ? null : 'resources')
+    }
+    document.addEventListener('keydown', onKeyDown)
+    return () => document.removeEventListener('keydown', onKeyDown)
+  }, [overlay, setOverlay])
 
   const tdName = project.techdegree?.name ?? 'Techdegree'
 
@@ -286,6 +303,10 @@ export function Grading() {
         <OutputPanel review={review} project={project} unreviewed={tally.unreviewed} />
       </div>
 
+      {overlay === 'resources' && (
+        <ResourcePanel project={project} onClose={() => setOverlay(null)} />
+      )}
+
       {/* Status bar */}
       <div className="flex shrink-0 items-center gap-5 border-t border-line bg-panel px-6 py-[10px] font-mono text-[12px] text-ink-4 max-rails:gap-3 max-rails:px-4 max-rails:text-[11px]">
         <span className="text-met">
@@ -299,7 +320,20 @@ export function Grading() {
             {tally.exceedsUngraded} exceeds not graded
           </span>
         )}
-        <ShortcutsHint className="ml-auto" onClick={openShortcuts} />
+        <span className="ml-auto flex items-center gap-4 max-rails:gap-2">
+          <KeyHint
+            keyLabel="R"
+            label="resources"
+            testId="resources-hint"
+            onClick={() => setOverlay('resources')}
+          />
+          <KeyHint
+            keyLabel="?"
+            label="shortcuts"
+            testId="shortcuts-hint"
+            onClick={openShortcuts}
+          />
+        </span>
       </div>
     </>
   )

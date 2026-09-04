@@ -6,7 +6,8 @@ import { deleteDraft, loadDrafts } from '@/review/storage'
 import type { Draft } from '@/review/types'
 import { ago, plural } from '@/lib/time'
 import { cn } from '@/lib/cn'
-import { Button, ConfirmButton, Label, Logo, ShortcutsHint } from '@/components/primitives'
+import { moveFocusBy, visibleNavItems } from '@/lib/navList'
+import { Button, ConfirmButton, KeyHint, Label, Logo } from '@/components/primitives'
 import { EmptyState, ErrorState, LoadingState } from '@/components/StateViews'
 import { ThemeToggle } from '@/components/Theme'
 import { useToast } from '@/components/Toast'
@@ -22,9 +23,7 @@ import { isTypingTarget } from '@/review/useGradingKeys'
  * clicked something.
  */
 const navItems = (list: string) =>
-  [
-    ...document.querySelectorAll<HTMLElement>(`[data-nav-list="${list}"] [data-nav-item]`),
-  ].filter((el) => el.offsetParent !== null)
+  visibleNavItems(`[data-nav-list="${list}"] [data-nav-item]`)
 
 export function Launcher() {
   const { data, isPending, isError, error, refetch } = useTechdegreeIndex()
@@ -80,13 +79,11 @@ export function Launcher() {
 
       const list = focused.closest('[data-nav-list]')
       if (!list) return
-      const items = [...list.querySelectorAll<HTMLElement>('[data-nav-item]')]
-      const at = items.indexOf(focused)
-      if (at === -1) return
+      const items = visibleNavItems('[data-nav-item]', list)
+      if (!items.includes(focused)) return
 
       e.preventDefault()
-      const next = items[Math.max(0, Math.min(items.length - 1, at + (down ? 1 : -1)))]
-      next?.focus()
+      moveFocusBy(items, down ? 1 : -1)
     }
     document.addEventListener('keydown', onKeyDown)
     return () => document.removeEventListener('keydown', onKeyDown)
@@ -312,7 +309,13 @@ export function Launcher() {
       {/* Same status bar as the grading screen, so the controls live in the
           same place on both. */}
       <div className="flex shrink-0 items-center gap-5 border-t border-line bg-panel px-6 py-[10px] font-mono text-[12px] text-ink-4 max-rails:gap-3 max-rails:px-4 max-rails:text-[11px]">
-        <ShortcutsHint className="ml-auto" onClick={openShortcuts} />
+        <KeyHint
+          className="ml-auto"
+          keyLabel="?"
+          label="shortcuts"
+          testId="shortcuts-hint"
+          onClick={openShortcuts}
+        />
       </div>
     </>
   )

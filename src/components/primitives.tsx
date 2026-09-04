@@ -7,16 +7,28 @@ export function Kbd({ children, className }: { children: React.ReactNode; classN
 }
 
 /**
- * The one thing both status bars say about the keyboard, in place of the
- * cheat sheet they used to print. A button, not a caption — the sheet should
- * be reachable without knowing the shortcut that opens it.
+ * All the status bars say about the keyboard now, in place of the cheat
+ * sheet they used to print. A button, not a caption — what it opens should
+ * be reachable without already knowing the key that opens it.
  */
-export function ShortcutsHint({ className, onClick }: { className?: string; onClick: () => void }) {
+export function KeyHint({
+  keyLabel,
+  label,
+  testId,
+  className,
+  onClick,
+}: {
+  keyLabel: string
+  label: string
+  testId: string
+  className?: string
+  onClick: () => void
+}) {
   return (
     <button
       type="button"
-      data-testid="shortcuts-hint"
-      aria-label="Keyboard shortcuts"
+      data-testid={testId}
+      aria-label={label}
       className={cn(
         'inline-flex items-center gap-2 rounded-[5.5px] px-1.5 py-0.5',
         'text-ink-4 hover:text-ink-2 [&:hover_kbd]:border-edge-2 [&:hover_kbd]:text-ink-2',
@@ -24,8 +36,8 @@ export function ShortcutsHint({ className, onClick }: { className?: string; onCl
       )}
       onClick={onClick}
     >
-      <Kbd>?</Kbd>
-      shortcuts
+      <Kbd>{keyLabel}</Kbd>
+      {label}
     </button>
   )
 }

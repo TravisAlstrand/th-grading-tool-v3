@@ -24,6 +24,10 @@ const INDEX = read('../src/test/fixtures/index.json')
 const PROJECTS = read('../src/test/fixtures/projects.json')
 
 const GAME_SHOW_ID = '57d592e8-4d55-4707-9ecc-0550361e95c8'
+// Public API Requests — the fixture project with no studyGuide.
+const NO_GUIDE_ID = PROJECTS.find((p) => !p.studyGuide)._id
+// An Interactive Photo Gallery — carries the desktop mockup and nothing else.
+const ONE_MOCKUP_ID = PROJECTS.find((p) => p.desktopMockup && !p.mobileMockup)._id
 const PORT = 4319
 const BASE = `http://localhost:${PORT}`
 
@@ -743,14 +747,153 @@ async function main() {
   check('? closes it again', !(await page.isVisible('[data-testid="shortcuts"]')))
 
   // `?` is a plain character, so it has to stay out of the way of typing.
+  await page.keyboard.press('1')
+  await page.waitForTimeout(120)
   await page.keyboard.press('2')
-  await page.waitForTimeout(150)
+  await page.waitForSelector('textarea')
+  await page.waitForFunction(() => document.activeElement?.tagName === 'TEXTAREA')
   await page.keyboard.type('why? because')
   await page.waitForTimeout(120)
   check('? types into a note rather than opening the sheet', !(await page.isVisible('[data-testid="shortcuts"]')))
   check(
     'and the question mark reached the note',
     (await page.inputValue('textarea')).includes('why? because'),
+  )
+  await page.keyboard.press('Escape')
+
+  /* ---------------- the resources panel ---------------- */
+
+  section('R opens the resources panel')
+  await page.setViewportSize({ width: 1440, height: 900 })
+  await page.goto(`${BASE}/review/${GAME_SHOW_ID}`)
+  await page.waitForSelector('[data-testid="requirement"]')
+  await page.keyboard.press('r')
+  await page.waitForSelector('[data-testid="resources"]')
+  check('R opens it', await page.isVisible('[data-testid="resources"]'))
+
+  const links = await page.$$eval('[data-testid="resource-link"]', (els) =>
+    els.map((a) => ({ href: a.getAttribute('href'), target: a.getAttribute('target'), rel: a.getAttribute('rel') })),
+  )
+  check(
+    'it lists the study guide and all three validators',
+    links.length === 4 && links.some((l) => l.href.includes('drive.google.com')),
+    `${links.length} links`,
+  )
+  // Opening a link must not take the review with it.
+  check(
+    'every link opens in a new tab, with rel set',
+    links.every((l) => l.target === '_blank' && /noopener/.test(l.rel) && /noreferrer/.test(l.rel)),
+  )
+
+  // Opening used to leave focus behind the dialog, two or three tabs away
+  // from the first link.
+  const focusedLink = () =>
+    page.evaluate(() => {
+      const a = document.activeElement
+      return a?.dataset?.testid === 'resource-link' ? a.textContent.trim() : `<${a?.tagName ?? 'none'}>`
+    })
+  check('the first link takes focus on open', (await focusedLink()).startsWith('Game Show App'), await focusedLink())
+
+  await page.keyboard.press('j')
+  await page.waitForTimeout(80)
+  check('J moves to the next link', (await focusedLink()).startsWith('CSS Validator'), await focusedLink())
+  await page.keyboard.press('k')
+  await page.waitForTimeout(80)
+  check('and K comes back', (await focusedLink()).startsWith('Game Show App'))
+  await page.keyboard.press('k')
+  await page.waitForTimeout(80)
+  check('K stops at the top rather than escaping the dialog', (await focusedLink()).startsWith('Game Show App'))
+
+  // aria-modal is a promise that Tab does not walk out of the dialog. One
+  // full cycle proves both halves: it stayed in, and it came back round.
+  for (let i = 0; i < links.length; i += 1) await page.keyboard.press('Tab')
+  await page.waitForTimeout(80)
+  check(
+    `Tab wraps within the dialog after ${links.length} presses`,
+    (await focusedLink()).startsWith('Game Show App'),
+    await focusedLink(),
+  )
+
+  const beforeR = await grades()
+  await page.keyboard.press('1')
+  await page.waitForTimeout(120)
+  check(
+    'grading keys do not fire underneath it',
+    JSON.stringify(await grades()) === JSON.stringify(beforeR),
+  )
+  await page.keyboard.press('r')
+  await page.waitForTimeout(120)
+  check('R closes it again', !(await page.isVisible('[data-testid="resources"]')))
+  check(
+    'and focus does not stay on the link that is gone',
+    await page.evaluate(() => document.activeElement?.dataset?.testid !== 'resource-link'),
+  )
+  await page.click('[data-testid="resources-hint"]')
+  await page.waitForSelector('[data-testid="resources"]')
+  check('the status-bar hint opens it too', await page.isVisible('[data-testid="resources"]'))
+  await page.keyboard.press('Escape')
+  await page.waitForTimeout(120)
+  check('Esc closes it without leaving the review', !(await page.isVisible('[data-testid="resources"]')) && page.url().includes(GAME_SHOW_ID))
+
+  // R is a bare letter, so it has to stay out of the way of writing feedback.
+  await page.keyboard.press('1')
+  await page.waitForTimeout(120)
+  await page.keyboard.press('2')
+  await page.waitForSelector('textarea')
+  await page.waitForFunction(() => document.activeElement?.tagName === 'TEXTAREA')
+  await page.keyboard.type('refactor the render')
+  await page.waitForTimeout(120)
+  check('R types into a note rather than opening the panel', !(await page.isVisible('[data-testid="resources"]')))
+  check(
+    'and the letter reached the note',
+    (await page.inputValue('textarea')).includes('refactor the render'),
+  )
+  await page.keyboard.press('Escape')
+
+  // A project with no study guide should show the validators and no empty heading.
+  await page.goto(`${BASE}/review/${NO_GUIDE_ID}`)
+  await page.waitForSelector('[data-testid="requirement"]')
+  await page.keyboard.press('r')
+  await page.waitForSelector('[data-testid="resources"]')
+  const noGuide = await page.textContent('[data-testid="resources"]')
+  check(
+    'a project without a study guide shows no empty group',
+    !noGuide.includes('Study guide') && noGuide.includes('Validators'),
+  )
+  check('and no mockup group when it has none', !noGuide.includes('ockup'))
+  await page.keyboard.press('Escape')
+
+  // Mockups are three independently nullable fields; the common case is a
+  // subset. This fixture carries the desktop one only.
+  await page.goto(`${BASE}/review/${ONE_MOCKUP_ID}`)
+  await page.waitForSelector('[data-testid="requirement"]')
+  await page.keyboard.press('r')
+  await page.waitForSelector('[data-testid="resources"]')
+  const oneMockup = await page.textContent('[data-testid="resources"]')
+  check(
+    'a project with one mockup lists just that one',
+    oneMockup.includes('Desktop mockup') &&
+      !oneMockup.includes('Mobile mockup') &&
+      !oneMockup.includes('Tablet mockup'),
+  )
+  // Read the headings as elements: textContent concatenates the heading
+  // straight into the first row, so "Mockup" and "MockupDesktop mockup" are
+  // the same string to a substring test.
+  const headings = () =>
+    page.$$eval('[data-testid="resources"] .label', (els) => els.map((e) => e.textContent.trim()))
+  check(
+    'and the heading is singular when there is one',
+    (await headings()).includes('Mockup'),
+    (await headings()).join(' · '),
+  )
+  const mockHref = await page.$$eval('[data-testid="resource-link"]', (els) =>
+    els.map((a) => a.getAttribute('href')).find((h) => h.includes('mockup')),
+  )
+  check('the mockup link is the URL from Sanity', Boolean(mockHref), mockHref ?? 'none')
+  check(
+    'the groups are ordered project-first, then global',
+    (await headings()).join(',') === 'Study guide,Mockup,Validators',
+    (await headings()).join(' · '),
   )
   await page.keyboard.press('Escape')
 

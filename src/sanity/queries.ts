@@ -21,6 +21,11 @@ export const INDEX_QUERY = `
 export const PROJECT_QUERY = `
 *[_type == "project" && _id == $projectId][0] {
   _id, title, projectNumber, studyGuide,
+  mobileMockup, tabletMockup, desktopMockup,
+  // The three validators are their own document type and reference nothing,
+  // so they are the same list for every project. Co-queried here rather than
+  // fetched separately — Sanity answers both in one round trip.
+  "resources": *[_type == "resource"] | order(title asc) { _id, title, description, link },
   "techdegree": techdegree->{_id, name, abbr, color},
   "gradingSections": *[_type == "gradingSection" && references(^._id)] | order(order asc) {
     _id, title, order,

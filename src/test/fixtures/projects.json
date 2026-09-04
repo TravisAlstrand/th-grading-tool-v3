@@ -60,7 +60,7 @@
           },
           {
             "_id": "6e6d26f4-3785-48f5-a259-01a7e30269e2",
-            "title": "Only letters in the phrase have the class “letter”",
+            "title": "Only letters in the phrase have the class \u201cletter\u201d",
             "description": null,
             "isExceeds": false,
             "order": 3
@@ -81,7 +81,7 @@
         "requirements": [
           {
             "_id": "44b34d3f-da4f-412f-b614-1080cba8ecda",
-            "title": "Clicking a letter present in the phrase adds the “show” class to those letters in the display",
+            "title": "Clicking a letter present in the phrase adds the \u201cshow\u201d class to those letters in the display",
             "description": null,
             "isExceeds": false,
             "order": 1
@@ -116,28 +116,51 @@
         "requirements": [
           {
             "_id": "bb971b2f-ae59-4a7d-aa71-0de2f7fd69fe",
-            "title": "If a player makes 5 wrong guesses, the “lose” overlay is shown",
+            "title": "If a player makes 5 wrong guesses, the \u201close\u201d overlay is shown",
             "description": null,
             "isExceeds": false,
             "order": 1
           },
           {
             "_id": "401004e4-a3f4-4736-83a3-85792affd8ec",
-            "title": "If all the letters in the phrase are shown, the “win” overlay is shown",
+            "title": "If all the letters in the phrase are shown, the \u201cwin\u201d overlay is shown",
             "description": null,
             "isExceeds": false,
             "order": 2
           },
           {
             "_id": "541d36a4-cbdc-44e3-8a42-f2768b39e6a7",
-            "title": "A button has been added to the “lose” and “win” overlays to reset the game",
+            "title": "A button has been added to the \u201close\u201d and \u201cwin\u201d overlays to reset the game",
             "description": null,
             "isExceeds": true,
             "order": 3
           }
         ]
       }
-    ]
+    ],
+    "resources": [
+      {
+        "_id": "ed0d7cf8-ef0b-432f-ac8f-feb2d298f677",
+        "title": "CSS Validator",
+        "description": "Validate your CSS before submission!",
+        "link": "https://jigsaw.w3.org/css-validator/#validate_by_input"
+      },
+      {
+        "_id": "6f690d71-f6cf-4e38-9159-c033d74efe07",
+        "title": "HTML Validator",
+        "description": "Validate your HTML before submission!",
+        "link": "https://validator.w3.org/#validate_by_input"
+      },
+      {
+        "_id": "7f29ced7-8b12-448a-b209-7aff1a99651b",
+        "title": "JavaScript Validator",
+        "description": "Validate your JS before submission!",
+        "link": "https://jshint.com/"
+      }
+    ],
+    "mobileMockup": null,
+    "tabletMockup": null,
+    "desktopMockup": null
   },
   {
     "_id": "13343440-d1f5-4742-b632-f58488829e00",
@@ -256,7 +279,30 @@
           }
         ]
       }
-    ]
+    ],
+    "resources": [
+      {
+        "_id": "ed0d7cf8-ef0b-432f-ac8f-feb2d298f677",
+        "title": "CSS Validator",
+        "description": "Validate your CSS before submission!",
+        "link": "https://jigsaw.w3.org/css-validator/#validate_by_input"
+      },
+      {
+        "_id": "6f690d71-f6cf-4e38-9159-c033d74efe07",
+        "title": "HTML Validator",
+        "description": "Validate your HTML before submission!",
+        "link": "https://validator.w3.org/#validate_by_input"
+      },
+      {
+        "_id": "7f29ced7-8b12-448a-b209-7aff1a99651b",
+        "title": "JavaScript Validator",
+        "description": "Validate your JS before submission!",
+        "link": "https://jshint.com/"
+      }
+    ],
+    "mobileMockup": null,
+    "tabletMockup": null,
+    "desktopMockup": null
   },
   {
     "_id": "ddb3ef05-d4cb-4657-a439-9b0ea792e34c",
@@ -354,6 +400,143 @@
           }
         ]
       }
-    ]
+    ],
+    "resources": [
+      {
+        "_id": "ed0d7cf8-ef0b-432f-ac8f-feb2d298f677",
+        "title": "CSS Validator",
+        "description": "Validate your CSS before submission!",
+        "link": "https://jigsaw.w3.org/css-validator/#validate_by_input"
+      },
+      {
+        "_id": "6f690d71-f6cf-4e38-9159-c033d74efe07",
+        "title": "HTML Validator",
+        "description": "Validate your HTML before submission!",
+        "link": "https://validator.w3.org/#validate_by_input"
+      },
+      {
+        "_id": "7f29ced7-8b12-448a-b209-7aff1a99651b",
+        "title": "JavaScript Validator",
+        "description": "Validate your JS before submission!",
+        "link": "https://jshint.com/"
+      }
+    ],
+    "mobileMockup": null,
+    "tabletMockup": null,
+    "desktopMockup": null
+  },
+  {
+    "_id": "b8284cd8-ae69-4c33-8b6d-ea1c97d256ca",
+    "desktopMockup": "https://treehouse-techdegree.s3.amazonaws.com/fewd/fewd-mockups/p5/gallery_mockup.png",
+    "gradingSections": [
+      {
+        "_id": "596d5973-83bd-469b-8120-ca7c1bf2bc02",
+        "order": 1,
+        "requirements": [
+          {
+            "_id": "eefb0921-18a9-4a0e-8833-b94a39f1277a",
+            "description": null,
+            "isExceeds": false,
+            "order": 1,
+            "title": "Design implementation includes the thumbnail gallery and a search box."
+          },
+          {
+            "_id": "5ec7a997-cd32-4b61-9b73-4a1ad51a8c68",
+            "description": null,
+            "isExceeds": false,
+            "order": 2,
+            "title": "General spacing and arrangement of the elements matches the layout of the gallery mockup."
+          },
+          {
+            "_id": "9da3a0e5-b840-451e-a973-6d289ee70b60",
+            "description": null,
+            "isExceeds": false,
+            "order": 3,
+            "title": "CSS Grid Layout is used to create the thumbnail gallery layout."
+          },
+          {
+            "_id": "4143187c-42a8-4505-a40c-f7488034e188",
+            "description": null,
+            "isExceeds": false,
+            "order": 4,
+            "title": "Thumbnail gallery should have 4 columns when screen width is at 1024px."
+          },
+          {
+            "_id": "8300e4e3-0262-4764-9ca5-0d82c9686ba5",
+            "description": null,
+            "isExceeds": true,
+            "order": 5,
+            "title": "Make the CSS Grid thumbnail gallery responsive without utilizing media queries."
+          }
+        ],
+        "title": "Design"
+      },
+      {
+        "_id": "d0e58d92-b305-48f3-90e0-93d17ec915ce",
+        "order": 2,
+        "requirements": [
+          {
+            "_id": "a8db1358-1d95-49d4-9157-912388042b64",
+            "description": null,
+            "isExceeds": false,
+            "order": 1,
+            "title": "Successfully implements the baguetteBox.js: Images appear thumbnail image is clicked. Background overlay covers the entire window. Lightbox include captions. Images can be navigated by clicking arrows. The lightbox can be closed."
+          }
+        ],
+        "title": "Lightbox functionality"
+      },
+      {
+        "_id": "1157f60e-4b1e-4462-adae-3d595f3589fb",
+        "order": 3,
+        "requirements": [
+          {
+            "_id": "6328e572-8a47-496e-9059-2dad63b8bbde",
+            "description": null,
+            "isExceeds": false,
+            "order": 1,
+            "title": "Successfully implements the included searchFilter.js plugin and ALL of the following features are functioning: As the user types into the search box, only photos that match the caption text appear. Case insensitivity has been added"
+          },
+          {
+            "_id": "b4c858ff-cfa3-4aca-9026-90603c24f156",
+            "description": null,
+            "isExceeds": true,
+            "order": 2,
+            "title": "Project uses original JavaScript code to implement search box functionality instead of a plugin. ALL of the following features are functioning: As the user is typing only matching images are shown, is case insensitive"
+          }
+        ],
+        "title": "Content Filtering"
+      }
+    ],
+    "mobileMockup": null,
+    "projectNumber": 5,
+    "resources": [
+      {
+        "_id": "ed0d7cf8-ef0b-432f-ac8f-feb2d298f677",
+        "description": "Validate your CSS before submission!",
+        "link": "https://jigsaw.w3.org/css-validator/#validate_by_input",
+        "title": "CSS Validator"
+      },
+      {
+        "_id": "6f690d71-f6cf-4e38-9159-c033d74efe07",
+        "description": "Validate your HTML before submission!",
+        "link": "https://validator.w3.org/#validate_by_input",
+        "title": "HTML Validator"
+      },
+      {
+        "_id": "7f29ced7-8b12-448a-b209-7aff1a99651b",
+        "description": "Validate your JS before submission!",
+        "link": "https://jshint.com/",
+        "title": "JavaScript Validator"
+      }
+    ],
+    "studyGuide": "https://drive.google.com/file/d/123uM-vnEMAt5_lCLe7oTnvUMHxcaeFmv/view?usp=sharing",
+    "tabletMockup": null,
+    "techdegree": {
+      "_id": "70dd7eed-2829-4210-ae96-94c63f54ea03",
+      "abbr": "FEWD",
+      "color": "#5FCF80",
+      "name": "Front End Web Development"
+    },
+    "title": "An Interactive Photo Gallery"
   }
 ]
