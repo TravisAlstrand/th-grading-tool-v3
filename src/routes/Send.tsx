@@ -2,12 +2,13 @@ import { useEffect, useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useReviewContext } from './ReviewLayout'
 import { buildReview } from '@/review/buildReview'
+import { reviewStatus } from '@/review/selectors'
 import { GRADES, GRADE_ORDER } from '@/review/grades'
 import { getTemplate, isFenceDelimiter, splitFences } from '@/review/templates'
 import type { Grade } from '@/review/types'
 import { useOverlayOpen } from '@/components/Overlays'
 import { isTypingTarget } from '@/review/useGradingKeys'
-import { Button, ConfirmButton, HomeButton, Kbd, Label } from '@/components/primitives'
+import { Button, Checkbox, ConfirmButton, HomeButton, Kbd, Label } from '@/components/primitives'
 import { ThemeToggle } from '@/components/Theme'
 import { useToast } from '@/components/Toast'
 import { copyText } from '@/lib/clipboard'
@@ -90,6 +91,7 @@ export function Send() {
   const [expanded, setExpanded] = useState<Record<string, boolean>>({})
 
   const { text, groups } = useMemo(() => buildReview(review, project), [review, project])
+  const status = reviewStatus(tally)
 
   // This preview redraws the message from `groups` rather than printing
   // `text`, so that :meets: can show as a tick the way Slack renders it. That
@@ -156,13 +158,21 @@ export function Send() {
             {project.title} · {tally.reviewed} of {tally.total} reviewed
           </span>
         </div>
-        <span
-          className={cn(
-            'ml-auto font-mono text-[12px]',
-            tally.unreviewed ? 'text-questioned' : 'text-accent',
+        {/* Amber is "this blocks the review", grey is "optional and still
+            open", green is "done" — the same three readings the grading
+            status bar uses for the same three facts. */}
+        <span className="ml-auto font-mono text-[12px]" data-testid="send-status">
+          <span className={status.allClear || !tally.unreviewed ? 'text-accent' : 'text-questioned'}>
+            {status.meets}
+          </span>
+          {status.exceeds && (
+            <>
+              <span className="text-ink-5"> · </span>
+              <span className={tally.exceedsUngraded ? 'text-ink-4' : 'text-accent'}>
+                {status.exceeds}
+              </span>
+            </>
           )}
-        >
-          {tally.unreviewed ? `${tally.unreviewed} unreviewed` : 'nothing unreviewed'}
         </span>
         <HomeButton onClick={() => navigate('/')} />
         <ThemeToggle />
@@ -241,6 +251,13 @@ export function Send() {
           })}
 
           <div className="flex flex-col gap-[10px]">
+            <Checkbox
+              checked={review.divider}
+              testId="divider-toggle"
+              onChange={(value) => dispatch({ type: 'setDivider', value })}
+            >
+              Rule off the requirements before the closing line
+            </Checkbox>
             <Label>Closing line</Label>
             <textarea
               rows={2}

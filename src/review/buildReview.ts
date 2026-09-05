@@ -59,20 +59,31 @@ export function buildReview(review: Review, project: ProjectDetail | null | unde
     if (!items.length) continue
     wroteRequirements = true
 
+    // Flagged items are spaced, passing ones are not. A questioned or
+    // needs-work item may carry a quoted note, and only spacing the ones that
+    // happen to have text made the group look ragged — the item after a note
+    // sat flush against it while the rest had air. Passing items never carry
+    // a note (`buildReview` drops them above), so they read better stacked.
+    const spaced = takesNote(grade)
+
     const lines: string[] = []
     for (const { req, note } of items) {
+      if (spaced && lines.length) lines.push('')
       const exceeds = req.isExceeds ? template.exceeds : ''
       lines.push(`${template.mark[grade]}${template.gap}${exceeds}${req.title}`)
-      if (note) lines.push(template.quote(note), '')
+      if (note) lines.push(template.quote(note))
     }
-    blocks.push(lines.join('\n').replace(/\n+$/, ''))
+    blocks.push(lines.join('\n'))
   }
 
   const closing = review.closing.trim()
   if (closing) {
     // Only between the two: a review with no graded requirements would
-    // otherwise open with a rule under the greeting.
-    if (wroteRequirements && template.divider) blocks.push(template.divider)
+    // otherwise open with a rule under the greeting. The reviewer can turn
+    // it off per review on the send screen.
+    if (review.divider && wroteRequirements && template.divider) {
+      blocks.push(template.divider)
+    }
     blocks.push(closing)
   }
 

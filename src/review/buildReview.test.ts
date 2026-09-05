@@ -164,6 +164,50 @@ describe('buildReview', () => {
     expect(text).toContain(`:meets: :exceeds: ${titleOf(exceedsId)}`)
   })
 
+  it('spaces flagged items apart but stacks passing ones', () => {
+    // A note under one item and nothing under the next made the group ragged.
+    const review = reviewFor(
+      GAME_SHOW,
+      gradesFrom([
+        [id(0), 'met'],
+        [id(4), 'met'],
+        [id(2), 'questioned', 'Two contain digits.'],
+        [id(3), 'questioned', ''],
+        [id(1), 'needs', 'Only three phrases.'],
+        [id(5), 'needs', 'Applied to spaces too.'],
+      ]),
+    )
+    const { text } = buildReview(review, GAME_SHOW)
+    const lines = text.split('\n')
+    const lineOf = (needle: string) => lines.findIndex((l) => l.includes(needle))
+
+    // Two passing items, back to back.
+    expect(lineOf(titleOf(id(4)))).toBe(lineOf(titleOf(id(0))) + 1)
+
+    // A questioned item with no note still gets its own air above it.
+    expect(lines[lineOf(titleOf(id(3))) - 1]).toBe('')
+    // And so does one that follows a quoted note.
+    expect(lines[lineOf(titleOf(id(5))) - 1]).toBe('')
+    expect(lines[lineOf(titleOf(id(5))) - 2]).toBe('> Only three phrases.')
+
+    // The spacing must not leave a trailing blank at the end of a group.
+    expect(text).not.toMatch(/\n\n\n/)
+  })
+
+  it('does not space a group of passing items even when one is exceeds', () => {
+    const review = reviewFor(
+      GAME_SHOW,
+      gradesFrom([
+        [id(4), 'met'],
+        [id(6), 'met'],
+      ]),
+    )
+    const { text } = buildReview(review, GAME_SHOW)
+    const lines = text.split('\n')
+    const at = lines.findIndex((l) => l.includes(titleOf(id(4))))
+    expect(lines[at + 1]).toContain(titleOf(id(6)))
+  })
+
   it('rules off the requirements before the closing line', () => {
     const review = reviewFor(GAME_SHOW, gradesFrom([[id(0), 'met']]))
     const { text } = buildReview(review, GAME_SHOW)
@@ -181,6 +225,17 @@ describe('buildReview', () => {
     // Otherwise the greeting gets a horizontal rule under it for no reason.
     const { text } = buildReview(reviewFor(GAME_SHOW), GAME_SHOW)
     expect(text).not.toMatch(/─/)
+  })
+
+  it('leaves the rule out when the reviewer turns it off', () => {
+    const on = reviewFor(GAME_SHOW, gradesFrom([[id(0), 'met']]))
+    expect(buildReview(on, GAME_SHOW).text).toMatch(/─/)
+    // Everything else about the review is unchanged by the toggle.
+    const off = { ...on, divider: false }
+    const offText = buildReview(off, GAME_SHOW).text
+    expect(offText).not.toMatch(/─/)
+    expect(offText).toContain(titleOf(id(0)))
+    expect(offText).toContain(DEFAULT_CLOSING)
   })
 
   it('does not rule off when there is no closing line to separate', () => {

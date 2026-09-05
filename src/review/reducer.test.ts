@@ -195,5 +195,17 @@ describe('reviewReducer', () => {
       expect(state.review.opening).toBe('Nice work overall.')
       expect(state.review.closing).toBe('Resubmit when ready.')
     })
+
+    it('draws the rule by default and remembers being switched off', () => {
+      expect(start().review.divider).toBe(true)
+      const off = reviewReducer(start(), { type: 'setDivider', value: false })
+      expect(off.review.divider).toBe(false)
+      expect(reviewReducer(off, { type: 'setDivider', value: true }).review.divider).toBe(true)
+    })
+
+    it('returns the same state when the toggle is set to what it already is', () => {
+      const state = start()
+      expect(reviewReducer(state, { type: 'setDivider', value: true })).toBe(state)
+    })
   })
 })

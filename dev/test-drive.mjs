@@ -545,6 +545,20 @@ async function main() {
     'and nothing after the rule carries a grade marker',
     !clipLines.slice(ruleAt + 1).some((l) => /^:(meets|questioned|needs-work):/.test(l)),
   )
+  // Passing items stack; flagged ones get air, because they may carry a note.
+  const metLines = clipLines.filter((l) => l.startsWith(':meets:'))
+  const firstMet = clipLines.findIndex((l) => l.startsWith(':meets:'))
+  check(
+    'passing items sit directly on top of each other',
+    metLines.length < 2 || clipLines[firstMet + 1].startsWith(':meets:'),
+    clipLines.slice(firstMet, firstMet + 2).join(' ⏎ '),
+  )
+  const flaggedAt = clipLines.findIndex((l) => /^:(questioned|needs-work):/.test(l))
+  check(
+    'and a flagged item has a blank line above it',
+    flaggedAt > 0 && clipLines[flaggedAt - 1] === '',
+    clipLines.slice(Math.max(0, flaggedAt - 2), flaggedAt + 1).join(' ⏎ '),
+  )
   check('copying leaves the review exactly where it was', page.url().endsWith('/send'))
   check(
     'the toast says just what happened',
@@ -556,6 +570,28 @@ async function main() {
     'the Slack preview shows the same rule the output has',
     (await page.isVisible('[data-testid="preview-rule"]')) === /─/.test(clipboard),
   )
+
+  // The rule is off-switchable per review, for the case where there is no
+  // closing line to separate.
+  check('the rule toggle is on by default', await page.isChecked('[data-testid="divider-toggle"]'))
+  await page.uncheck('[data-testid="divider-toggle"]')
+  await page.waitForTimeout(200)
+  check('unchecking it drops the rule from the preview', !(await page.isVisible('[data-testid="preview-rule"]')))
+  await page.click('text=Copy to clipboard')
+  await page.waitForTimeout(300)
+  const noRule = await page.evaluate(() => navigator.clipboard.readText())
+  check('and from the copied output', !/─/.test(noRule))
+  check(
+    'while the rest of the review is untouched',
+    noRule.includes(':needs-work:') && noRule.includes('> Only 3 phrases, and 2 contain digits.'),
+  )
+  // It is part of the review, so it has to survive a reload like the rest.
+  await page.reload()
+  await page.waitForSelector('[data-testid="divider-toggle"]')
+  check('the choice is saved with the draft', !(await page.isChecked('[data-testid="divider-toggle"]')))
+  await page.check('[data-testid="divider-toggle"]')
+  await page.waitForTimeout(200)
+  check('and turning it back on restores the rule', await page.isVisible('[data-testid="preview-rule"]'))
 
 
   check(
@@ -713,6 +749,31 @@ async function main() {
   check('copy works with exceeds ungraded', exceedsClip.includes(':meets:'))
   check('and no unattempted exceeds is claimed as met', !exceedsClip.includes(':exceeds:'))
 
+  // This is the state the old single number described as "nothing
+  // unreviewed": every required requirement graded, every exceeds untouched.
+  const sendStatus = () => page.textContent('[data-testid="send-status"]')
+  check(
+    'the send screen states both halves, not just the required one',
+    (await sendStatus()).includes('all meets reviewed') &&
+      /\d+ exceeds unreviewed/.test(await sendStatus()),
+    await sendStatus(),
+  )
+  check(
+    'and does not call that clear',
+    !(await sendStatus()).includes('nothing unreviewed'),
+    await sendStatus(),
+  )
+  // Optional work outstanding is grey, not amber — it blocks nothing.
+  check(
+    'the outstanding exceeds are stated quietly',
+    await page.evaluate(() => {
+      const parts = [...document.querySelectorAll('[data-testid="send-status"] span')]
+      const ex = parts.find((p) => /exceeds unreviewed/.test(p.textContent))
+      const amber = getComputedStyle(document.documentElement).getPropertyValue('--color-questioned').trim()
+      return Boolean(ex) && getComputedStyle(ex).color !== amber
+    }),
+  )
+
   await page.evaluate(() => localStorage.clear())
   await page.goto(`${BASE}/review/${GAME_SHOW_ID}`)
   await page.waitForSelector('[data-testid="requirement"]')
@@ -724,6 +785,17 @@ async function main() {
       .map((r) => r.dataset.grade),
   )
   check('X marks the exceeds when a student did attempt them', afterX.every((g) => g === 'met'), afterX.join(','))
+
+  // With both halves done, the two-part reading collapses back to one.
+  await page.keyboard.press('m')
+  await page.waitForTimeout(250)
+  await page.goto(`${BASE}/review/${GAME_SHOW_ID}/send`)
+  await page.waitForSelector('[data-testid="send-status"]')
+  check(
+    'with everything graded it says just "nothing unreviewed"',
+    (await page.textContent('[data-testid="send-status"]')).trim() === 'nothing unreviewed',
+    await page.textContent('[data-testid="send-status"]'),
+  )
 
   /* ---------------- reflow ---------------- */
 

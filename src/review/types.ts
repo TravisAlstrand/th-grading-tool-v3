@@ -17,6 +17,12 @@ export type Review = {
   focusReqId: string | null
   opening: string
   closing: string
+  /**
+   * Whether the rule between the requirements and the closing line is drawn.
+   * On by default; a review with no closing line has nothing to separate,
+   * and a rule trailing the last requirement reads as a mistake.
+   */
+  divider: boolean
   template: TemplateId
 }
 
@@ -41,4 +47,10 @@ export type Tally = {
   reviewed: number
   total: number
   exceedsUngraded: number
+  /**
+   * How many exceeds the project has at all. Needed to tell "every exceeds
+   * is graded" apart from "there are none" — saying "all exceeds reviewed"
+   * about a project without any would be a claim about nothing.
+   */
+  exceedsTotal: number
 }

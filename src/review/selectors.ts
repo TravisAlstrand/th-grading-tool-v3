@@ -44,9 +44,13 @@ export function tally(
     reviewed: 0,
     total: ids.length - optional.size,
     exceedsUngraded: 0,
+    exceedsTotal: 0,
   }
   for (const id of ids) {
     const grade = grades[id]?.grade
+    // Counted from `ids`, not from `exceeds.length`: an id in the exceeds
+    // list but not in this project's requirements is not one of its exceeds.
+    if (optional.has(id)) t.exceedsTotal += 1
     if (grade) {
       t[grade] += 1
       if (!optional.has(id)) t.reviewed += 1
@@ -57,6 +61,39 @@ export function tally(
     }
   }
   return t
+}
+
+/**
+ * What the send screen says is left to do.
+ *
+ * Required and exceeds are counted separately everywhere else in the app, so
+ * one number could only ever have covered one of them — and the screen was
+ * reporting the required half while staying silent about the optional half.
+ * Two parts, unless there is genuinely nothing outstanding.
+ *
+ * `exceeds` is null when the project has none, because "all exceeds
+ * reviewed" would then be a statement about an empty set.
+ */
+export type ReviewStatus = {
+  /** Nothing outstanding at all, required or optional. */
+  allClear: boolean
+  meets: string
+  exceeds: string | null
+}
+
+export function reviewStatus(t: Tally): ReviewStatus {
+  if (!t.unreviewed && !t.exceedsUngraded) {
+    return { allClear: true, meets: 'nothing unreviewed', exceeds: null }
+  }
+  return {
+    allClear: false,
+    meets: t.unreviewed ? `${t.unreviewed} meets unreviewed` : 'all meets reviewed',
+    exceeds: t.exceedsTotal
+      ? t.exceedsUngraded
+        ? `${t.exceedsUngraded} exceeds unreviewed`
+        : 'all exceeds reviewed'
+      : null,
+  }
 }
 
 /** The worst grade present in a section, for the rail's status dot. */

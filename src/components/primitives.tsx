@@ -84,6 +84,67 @@ export function HomeButton({ className, onClick }: { className?: string; onClick
   )
 }
 
+/**
+ * The app's only checkbox, so it is drawn rather than styled: a native
+ * `input[type=checkbox]` cannot take these tokens in both themes without
+ * `appearance: none` and rebuilding the tick anyway. The input is still real
+ * and still the thing that is focused and toggled — it is just visually
+ * replaced, so keyboard, label click and screen readers behave normally.
+ */
+export function Checkbox({
+  checked,
+  onChange,
+  children,
+  testId,
+}: {
+  checked: boolean
+  onChange: (checked: boolean) => void
+  children: React.ReactNode
+  testId?: string
+}) {
+  return (
+    <label className="relative inline-flex cursor-pointer items-center gap-2.5 text-[14px] text-ink-2 select-none">
+      {/* Transparent and stretched over the whole row rather than `sr-only`:
+          off-screen, the drawn box below sits on top of the control and eats
+          the click. Label semantics still toggle it, but the input being the
+          thing actually under the pointer is what makes it behave for
+          anything driving the page. */}
+      <input
+        type="checkbox"
+        checked={checked}
+        data-testid={testId}
+        className="peer absolute inset-0 h-full w-full cursor-pointer opacity-0"
+        onChange={(e) => onChange(e.target.checked)}
+      />
+      <span
+        aria-hidden="true"
+        className={cn(
+          'grid h-[16.5px] w-[16.5px] shrink-0 place-items-center rounded-[4.5px] border',
+          'peer-focus-visible:outline peer-focus-visible:outline-2 peer-focus-visible:outline-offset-2',
+          'peer-focus-visible:outline-accent',
+          checked ? 'border-accent bg-accent text-on-accent' : 'border-edge-2 bg-surface',
+        )}
+      >
+        {checked && (
+          <svg
+            width="11"
+            height="11"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="3.5"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          >
+            <path d="M4 12.5 9.5 18 20 6.5" />
+          </svg>
+        )}
+      </span>
+      {children}
+    </label>
+  )
+}
+
 export function Label({ children, className }: { children: React.ReactNode; className?: string }) {
   return <span className={cn('label', className)}>{children}</span>
 }

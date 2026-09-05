@@ -39,6 +39,7 @@ export type ReviewAction =
   | { type: 'markRemainingMet'; scope?: 'required' | 'exceeds' }
   | { type: 'setOpening'; value: string }
   | { type: 'setClosing'; value: string }
+  | { type: 'setDivider'; value: boolean }
   | { type: 'setTemplate'; value: TemplateId }
   | { type: 'undo' }
 
@@ -52,6 +53,7 @@ export function newReview(projectId: string, techdegreeId: string | null = null)
     focusReqId: null,
     opening: DEFAULT_OPENING,
     closing: DEFAULT_CLOSING,
+    divider: true,
     template: 'slack',
   }
 }
@@ -182,6 +184,10 @@ export function reviewReducer(state: ReviewState, action: ReviewAction): ReviewS
     case 'setClosing':
       if (review.closing === action.value) return state
       return { ...state, review: { ...review, closing: action.value } }
+
+    case 'setDivider':
+      if (review.divider === action.value) return state
+      return { ...state, review: { ...review, divider: action.value } }
 
     case 'setTemplate':
       // Slack is the only template in Milestone 1, so there is deliberately

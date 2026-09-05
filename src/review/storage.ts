@@ -61,6 +61,9 @@ export function parseDraft(value: unknown): Draft | null {
     focusReqId: typeof d.focusReqId === 'string' ? d.focusReqId : null,
     opening: typeof d.opening === 'string' ? d.opening : DEFAULT_OPENING,
     closing: typeof d.closing === 'string' ? d.closing : DEFAULT_CLOSING,
+    // Drafts saved before the toggle existed have no `divider`. They were
+    // built when the rule was unconditional, so absent means on.
+    divider: typeof d.divider === 'boolean' ? d.divider : true,
     template: (d.template as TemplateId) === 'slack' ? 'slack' : 'slack',
     updatedAt: typeof d.updatedAt === 'number' ? d.updatedAt : Date.now(),
   }
